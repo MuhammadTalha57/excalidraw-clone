@@ -1,0 +1,40 @@
+"use client";
+
+import { useLayoutEffect, useRef } from "react";
+export default function Whiteboard() {
+    const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+    useLayoutEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+
+        const dpr = window.devicePixelRatio || 1;
+        const cssWidth = window.innerWidth;
+        const cssHeight = window.innerHeight;
+
+        canvas.style.width = `${cssWidth}px`;
+        canvas.style.height = `${cssHeight}px`;
+        canvas.width = Math.round(cssWidth * dpr);
+        canvas.height = Math.round(cssHeight * dpr);
+
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.clearRect(0, 0, cssWidth, cssHeight);
+
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(200, 100);
+        ctx.lineWidth = 3;
+        ctx.stroke();
+    }, []);
+    return (
+        <canvas
+            ref={canvasRef}
+            width={500}
+            height={500}
+            className="border bg-gray-300 rounded "
+        ></canvas>
+    );
+}
