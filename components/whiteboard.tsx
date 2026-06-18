@@ -1,8 +1,10 @@
 "use client";
 
-import { useLayoutEffect, useRef } from "react";
+import Toolbar from "@/components/toolbar";
+import { useLayoutEffect, useRef, useState } from "react";
 export default function Whiteboard() {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
+    const [selectedTool, setSelectedTool] = useState("selection");
 
     useLayoutEffect(() => {
         const canvas = canvasRef.current;
@@ -30,11 +32,20 @@ export default function Whiteboard() {
         ctx.stroke();
     }, []);
     return (
-        <canvas
-            ref={canvasRef}
-            width={500}
-            height={500}
-            className="border bg-gray-300 rounded "
-        ></canvas>
+        <div className="relative min-h-screen w-full overflow-hidden bg-[#f1ece4]">
+            <canvas
+                ref={canvasRef}
+                width={500}
+                height={500}
+                className="absolute inset-0 h-full w-full bg-[#f1ece4]"
+            />
+
+            <div className="pointer-events-none absolute inset-x-0 top-4 z-10 flex justify-center px-4 sm:top-6">
+                <Toolbar
+                    selectedTool={selectedTool}
+                    setSelectedTool={setSelectedTool}
+                />
+            </div>
+        </div>
     );
 }
