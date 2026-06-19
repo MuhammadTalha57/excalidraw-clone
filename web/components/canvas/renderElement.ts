@@ -18,7 +18,9 @@ function renderRectangle(ctx: CanvasRenderingContext2D, rect: Rectangle) {
 
     ctx.fillStyle = rect.fillColor;
     ctx.strokeStyle = rect.strokeColor;
-    ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
+    ctx.roundRect(rect.x, rect.y, rect.width, rect.height, 15);
+    ctx.stroke();
+    // ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
 
     ctx.restore();
 }

@@ -3,6 +3,10 @@ type BaseElement = {
     type: string;
     strokeColor: string;
     fillColor: string;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
 };
 
 type Rectangle = BaseElement & {
@@ -13,7 +17,7 @@ type Rectangle = BaseElement & {
     height: number;
 };
 
-type CanvasElement = Rectangle;
+type CanvasElement = BaseElement;
 
 type Interaction = { type: "idle" } | { type: "drawing"; elementId: string };
 // | { type: "dragging"; elementId: string; offsetX: number; offsetY: number }
