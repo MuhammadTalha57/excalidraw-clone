@@ -140,7 +140,10 @@ export default function Toolbar({
     }, [naturalWidth]);
 
     return (
-        <div className={`pointer-events-auto ${className}`} ref={toolbarRef}>
+        <div
+            className={`pointer-events-auto hover:cursor-pointer ${className}`}
+            ref={toolbarRef}
+        >
             <div
                 className="rounded-full border border-[#d5cec2] bg-[#f6f1e8] px-2 py-2 shadow-[0_16px_40px_rgba(15,23,42,0.16)] backdrop-blur"
                 style={{
@@ -178,7 +181,7 @@ export default function Toolbar({
                                     aria-pressed={isSelected}
                                     title={item.name}
                                     onClick={() => setSelectedTool(item.name)}
-                                    className={`flex h-11 w-11 items-center justify-center rounded-full border border-transparent text-[#5e564b] transition-all duration-150 hover:-translate-y-px hover:bg-white/80 hover:text-[#1f1b16] hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c77a1f]/35 ${
+                                    className={`hover:cursor-pointer flex h-11 w-11 items-center justify-center rounded-full border border-transparent text-[#5e564b] transition-all duration-150 hover:-translate-y-px hover:bg-white/80 hover:text-[#1f1b16] hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c77a1f]/35 ${
                                         isSelected
                                             ? "border-[#d7b18a] bg-white text-[#1f1b16] shadow-[0_6px_18px_rgba(15,23,42,0.08)]"
                                             : "bg-transparent"

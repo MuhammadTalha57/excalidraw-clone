@@ -6,6 +6,15 @@ export default function Whiteboard() {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const [selectedTool, setSelectedTool] = useState("selection");
 
+    const cursorClass =
+        selectedTool === "hand"
+            ? "cursor-grab"
+            : selectedTool === "selection"
+              ? "cursor-default"
+              : selectedTool === "eraser"
+                ? "cursor-crosshair"
+                : "cursor-crosshair";
+
     useLayoutEffect(() => {
         const canvas = canvasRef.current;
         if (!canvas) return;
@@ -37,7 +46,7 @@ export default function Whiteboard() {
                 ref={canvasRef}
                 width={500}
                 height={500}
-                className="absolute inset-0 h-full w-full bg-[#f1ece4]"
+                className={`absolute inset-0 h-full w-full bg-[#f1ece4] ${cursorClass}`}
             />
 
             <div className="pointer-events-none absolute inset-x-0 top-4 z-10 flex justify-center px-4 sm:top-6">
