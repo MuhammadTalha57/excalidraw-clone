@@ -14,3 +14,10 @@ type Rectangle = BaseElement & {
 };
 
 type CanvasElement = Rectangle;
+
+type Interaction = { type: "idle" } | { type: "drawing"; elementId: string };
+// | { type: "dragging"; elementId: string; offsetX: number; offsetY: number }
+// | { type: "resizing"; elementId: string; handle: ResizeHandle }
+// | { type: "panning"; startX: number; startY: number };
+
+type Tool = "select" | "rectangle" | "ellipse" | "line" | "text" | "hand";

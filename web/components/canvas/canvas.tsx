@@ -4,6 +4,10 @@ import { useLayoutEffect, useRef, useState } from "react";
 import renderElement from "./renderElement";
 export default function Canvas() {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
+    const toolRef = useRef<Tool>("select");
+    const [interaction, setInteraction] = useState<Interaction>({
+        type: "idle",
+    });
 
     const [canvasElements, setCanvasElements] = useState<CanvasElement[]>([
         {
