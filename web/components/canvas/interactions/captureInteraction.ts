@@ -4,6 +4,10 @@ import { usePreviewElementStore } from "@/stores/usePreviewElement";
 import { useSelectedToolStore } from "@/stores/useSelectedTool";
 import { useCanvasElementsStore } from "@/stores/useCanvasElements";
 
+const setPreviewElement = usePreviewElementStore.getState().setPreviewElement;
+
+const addCanvasElement = useCanvasElementsStore.getState().addCanvasElement;
+
 let x = 0;
 let y = 0;
 let pointerDown = false;
@@ -14,14 +18,10 @@ function onPointerDown(e: PointerEvent<HTMLCanvasElement>) {
     y = e.clientY;
 }
 function onPointerUp(e: PointerEvent<HTMLCanvasElement>) {
-    pointerDown = false;
     const previewElement = usePreviewElementStore.getState().previewElement;
-    const setPreviewElement =
-        usePreviewElementStore.getState().setPreviewElement;
+    pointerDown = false;
     if (previewElement) {
         // Create new Canvas Element
-        const addCanvasElement =
-            useCanvasElementsStore.getState().addCanvasElement;
         addCanvasElement(previewElement);
         setPreviewElement(null);
     }
@@ -31,13 +31,11 @@ function onPointerMove(e: PointerEvent<HTMLCanvasElement>) {
     if (!pointerDown) return;
     let currentX = e.clientX;
     let currentY = e.clientY;
-    let tool = useSelectedToolStore.getState().selectedTool;
-    const setPreviewElement =
-        usePreviewElementStore.getState().setPreviewElement;
+
     const boundingRect = getBoundingRectangle(x, y, currentX, currentY);
     const previewElement: CanvasElement = {
         id: "2",
-        type: "rectangle",
+        type: "none",
         strokeColor: "#000000",
         fillColor: "#000000",
         x: boundingRect.x,
@@ -45,10 +43,22 @@ function onPointerMove(e: PointerEvent<HTMLCanvasElement>) {
         width: boundingRect.width,
         height: boundingRect.height,
     };
+
+    const tool = useSelectedToolStore.getState().selectedTool;
     if (tool === "rectangle") {
         // Drawing Rectangle
-        setPreviewElement(previewElement);
+        previewElement.type = "rectangle";
+    } else if (tool === "diamond") {
+        // Drawing Diamond
+        previewElement.type = "diamond";
+    } else if (tool === "ellipse") {
+        previewElement.type = "ellipse";
+    } else if (tool === "arrow") {
+        previewElement.type = "arrow";
+    } else if (tool === "line") {
+        previewElement.type = "line";
     }
+    setPreviewElement(previewElement);
 }
 
 export default function pointerHandler() {

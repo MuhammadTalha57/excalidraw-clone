@@ -30,7 +30,15 @@ type Interaction =
 // | { type: "resizing"; elementId: string; handle: ResizeHandle }
 // | { type: "panning"; startX: number; startY: number };
 
-type Tool = "select" | "rectangle" | "ellipse" | "line" | "text" | "hand";
+type Tool =
+    | "select"
+    | "rectangle"
+    | "diamond"
+    | "ellipse"
+    | "line"
+    | "arrow"
+    | "text"
+    | "hand";
 
 type PreviewElementStore = {
     previewElement: BaseElement | null;
