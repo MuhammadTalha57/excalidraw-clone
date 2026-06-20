@@ -31,3 +31,11 @@ type Interaction =
 // | { type: "panning"; startX: number; startY: number };
 
 type Tool = "select" | "rectangle" | "ellipse" | "line" | "text" | "hand";
+
+type PreviewElementStore = {
+    previewElement: BaseElement | null;
+
+    setPreviewElement: (element: BaseElement | null) => void;
+
+    clearPreviewElement: () => void;
+};

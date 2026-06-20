@@ -4,45 +4,20 @@ import { useLayoutEffect, useRef, useState } from "react";
 import { create } from "zustand";
 import renderElement from "./renderElement";
 import pointerHandler from "./interactions/captureInteraction";
-
-const useCanvasElements = create(() => ({
-    canvasElements: [
-        {
-            id: "1",
-            strokeColor: "#000000",
-            fillColor: "#000000",
-            x: 5,
-            y: 100,
-            width: 100,
-            height: 100,
-            type: "rectangle",
-        },
-    ],
-}));
+import { usePreviewElementStore } from "@/stores/usePreviewElement";
+import { useCanvasElementsStore } from "@/stores/useCanvasElements";
 
 export default function Canvas() {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
-    const toolRef = useRef<Tool>("select");
-    // const [interaction, setInteraction] = useState<Interaction>({
-    //     type: "idle",
-    // });
+
     const handler = pointerHandler();
-    // const pointer = usePointerTracker();
 
-    // const [canvasElements, setCanvasElements] = useState<CanvasElement[]>([
-    //     {
-    //         id: "1",
-    //         strokeColor: "#000000",
-    //         fillColor: "#000000",
-    //         x: 5,
-    //         y: 100,
-    //         width: 100,
-    //         height: 100,
-    //         type: "rectangle",
-    //     },
-    // ]);
-
-    const canvasElements = useCanvasElements((state) => state.canvasElements);
+    const canvasElements = useCanvasElementsStore(
+        (state) => state.canvasElements,
+    );
+    const previewElement = usePreviewElementStore(
+        (state) => state.previewElement,
+    );
 
     useLayoutEffect(() => {
         const canvas = canvasRef.current;
@@ -63,12 +38,12 @@ export default function Canvas() {
         for (const e of canvasElements) {
             renderElement(ctx, e);
         }
-    }, []);
+        if (previewElement) renderElement(ctx, previewElement);
+    }, [previewElement, canvasElements]);
     return (
         <canvas
             ref={canvasRef}
             className={`bg-[#ffffff]`}
-            // onMouseDown={handler.onPointerDown}
             onPointerMove={handler.onPointerMove}
             onPointerUp={handler.onPointerUp}
             onPointerDown={handler.onPointerDown}
