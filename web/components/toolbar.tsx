@@ -1,14 +1,7 @@
 "use client";
 
-import {
-    Dispatch,
-    ReactNode,
-    SetStateAction,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
-} from "react";
+import { useSelectedToolStore } from "@/stores/useSelectedTool";
+import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 
 export type ToolbarItem = {
     name: string;
@@ -20,9 +13,9 @@ export type ToolbarItem = {
 
 export const defaultToolbarItems: ToolbarItem[] = [
     {
-        name: "selection",
-        icon: <SelectionIcon />,
-        selectedIcon: <SelectionIcon active />,
+        name: "select",
+        icon: <SelectIcon />,
+        selectedIcon: <SelectIcon active />,
     },
     {
         name: "hand",
@@ -82,7 +75,7 @@ const GROUP_GAP = 14;
 const OUTER_PADDING = 8;
 
 const TOOL_GROUPS = new Map<string, number>([
-    ["selection", 0],
+    ["select", 0],
     ["hand", 0],
     ["rectangle", 1],
     ["diamond", 1],
@@ -96,19 +89,17 @@ const TOOL_GROUPS = new Map<string, number>([
 ]);
 
 export default function Toolbar({
-    selectedTool,
-    setSelectedTool,
     items = defaultToolbarItems,
     className = "",
 }: {
-    selectedTool: string;
-    setSelectedTool: Dispatch<SetStateAction<string>>;
     items?: ToolbarItem[];
     className?: string;
 }) {
     const [isScrollable, setIsScrollable] = useState(false);
     const toolbarRef = useRef<HTMLDivElement | null>(null);
 
+    const selectedTool = useSelectedToolStore().selectedTool;
+    const setSelectedTool = useSelectedToolStore().setSelectedTool;
     const naturalWidth = useMemo(() => {
         if (items.length === 0) return 0;
 
@@ -180,7 +171,9 @@ export default function Toolbar({
                                     aria-label={item.name}
                                     aria-pressed={isSelected}
                                     title={item.name}
-                                    onClick={() => setSelectedTool(item.name)}
+                                    onClick={() =>
+                                        setSelectedTool(item.name as Tool)
+                                    }
                                     className={`hover:cursor-pointer flex h-11 w-11 items-center justify-center rounded-full border border-transparent text-[#5e564b] transition-all duration-150 hover:-translate-y-px hover:bg-white/80 hover:text-[#1f1b16] hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c77a1f]/35 ${
                                         isSelected
                                             ? "border-[#d7b18a] bg-white text-[#1f1b16] shadow-[0_6px_18px_rgba(15,23,42,0.08)]"
@@ -198,7 +191,7 @@ export default function Toolbar({
     );
 }
 
-function SelectionIcon({ active = false }: { active?: boolean }) {
+function SelectIcon({ active = false }: { active?: boolean }) {
     return (
         <svg
             viewBox="0 0 24 24"

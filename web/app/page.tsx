@@ -1,5 +1,6 @@
 import Canvas from "@/components/canvas/canvas";
+import Whiteboard from "@/components/whiteboard";
 
 export default function Home() {
-    return <Canvas></Canvas>;
+    return <Whiteboard></Whiteboard>;
 }
