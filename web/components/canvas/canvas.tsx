@@ -2,14 +2,15 @@
 
 import { useLayoutEffect, useRef, useState } from "react";
 import renderElement from "./renderElement";
-import { usePointerTracker } from "./usePointerTracker";
+import pointerHandler from "./interactions/captureInteraction";
 export default function Canvas() {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const toolRef = useRef<Tool>("select");
     const [interaction, setInteraction] = useState<Interaction>({
         type: "idle",
     });
-    const pointer = usePointerTracker();
+    const handler = pointerHandler();
+    // const pointer = usePointerTracker();
 
     const [canvasElements, setCanvasElements] = useState<CanvasElement[]>([
         {
@@ -44,5 +45,14 @@ export default function Canvas() {
             renderElement(ctx, e);
         }
     }, []);
-    return <canvas ref={canvasRef} className={`bg-[#ffffff]`} />;
+    return (
+        <canvas
+            ref={canvasRef}
+            className={`bg-[#ffffff]`}
+            // onMouseDown={handler.onPointerDown}
+            onPointerMove={handler.onPointerMove}
+            onPointerUp={handler.onPointerUp}
+            onPointerDown={handler.onPointerDown}
+        />
+    );
 }
