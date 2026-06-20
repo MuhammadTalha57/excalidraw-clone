@@ -19,7 +19,13 @@ type Rectangle = BaseElement & {
 
 type CanvasElement = BaseElement;
 
-type Interaction = { type: "idle" } | { type: "drawing"; elementId: string };
+type Interaction =
+    | "idle"
+    | "drawing"
+    | "selecting"
+    | "dragging"
+    | "resizing"
+    | "panning";
 // | { type: "dragging"; elementId: string; offsetX: number; offsetY: number }
 // | { type: "resizing"; elementId: string; handle: ResizeHandle }
 // | { type: "panning"; startX: number; startY: number };

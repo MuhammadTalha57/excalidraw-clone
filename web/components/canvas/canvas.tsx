@@ -1,18 +1,12 @@
 "use client";
 
 import { useLayoutEffect, useRef, useState } from "react";
+import { create } from "zustand";
 import renderElement from "./renderElement";
 import pointerHandler from "./interactions/captureInteraction";
-export default function Canvas() {
-    const canvasRef = useRef<HTMLCanvasElement | null>(null);
-    const toolRef = useRef<Tool>("select");
-    const [interaction, setInteraction] = useState<Interaction>({
-        type: "idle",
-    });
-    const handler = pointerHandler();
-    // const pointer = usePointerTracker();
 
-    const [canvasElements, setCanvasElements] = useState<CanvasElement[]>([
+const useCanvasElements = create(() => ({
+    canvasElements: [
         {
             id: "1",
             strokeColor: "#000000",
@@ -23,7 +17,32 @@ export default function Canvas() {
             height: 100,
             type: "rectangle",
         },
-    ]);
+    ],
+}));
+
+export default function Canvas() {
+    const canvasRef = useRef<HTMLCanvasElement | null>(null);
+    const toolRef = useRef<Tool>("select");
+    // const [interaction, setInteraction] = useState<Interaction>({
+    //     type: "idle",
+    // });
+    const handler = pointerHandler();
+    // const pointer = usePointerTracker();
+
+    // const [canvasElements, setCanvasElements] = useState<CanvasElement[]>([
+    //     {
+    //         id: "1",
+    //         strokeColor: "#000000",
+    //         fillColor: "#000000",
+    //         x: 5,
+    //         y: 100,
+    //         width: 100,
+    //         height: 100,
+    //         type: "rectangle",
+    //     },
+    // ]);
+
+    const canvasElements = useCanvasElements((state) => state.canvasElements);
 
     useLayoutEffect(() => {
         const canvas = canvasRef.current;
