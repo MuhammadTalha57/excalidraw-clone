@@ -3,19 +3,23 @@ type BaseElement = {
     type: string;
     strokeColor: string;
     fillColor: string;
+    x1: number;
+    y1: number;
+    x2: number;
+    y2: number;
     x: number;
     y: number;
     width: number;
     height: number;
 };
 
-type Rectangle = BaseElement & {
-    // Top Left
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-};
+// type Rectangle = BaseElement & {
+//     // Top Left
+//     x: number;
+//     y: number;
+//     width: number;
+//     height: number;
+// };
 
 type CanvasElement = BaseElement;
 

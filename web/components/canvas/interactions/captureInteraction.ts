@@ -33,11 +33,16 @@ function onPointerMove(e: PointerEvent<HTMLCanvasElement>) {
     let currentY = e.clientY;
 
     const boundingRect = getBoundingRectangle(x, y, currentX, currentY);
+    console.log("MOVE: ", currentX, currentY, boundingRect.x, boundingRect.y);
     const previewElement: CanvasElement = {
         id: "2",
         type: "none",
         strokeColor: "#000000",
         fillColor: "#000000",
+        x1: x,
+        y1: y,
+        x2: currentX,
+        y2: currentY,
         x: boundingRect.x,
         y: boundingRect.y,
         width: boundingRect.width,
@@ -45,6 +50,7 @@ function onPointerMove(e: PointerEvent<HTMLCanvasElement>) {
     };
 
     const tool = useSelectedToolStore.getState().selectedTool;
+    console.log(tool);
     if (tool === "rectangle") {
         // Drawing Rectangle
         previewElement.type = "rectangle";

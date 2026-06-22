@@ -33,6 +33,7 @@ export default function Canvas() {
         canvas.style.height = `${cssHeight}px`;
         canvas.width = Math.round(cssWidth * dpr);
         canvas.height = Math.round(cssHeight * dpr);
+        ctx.scale(dpr, dpr);
 
         for (const e of canvasElements) {
             renderElement(ctx, e);
