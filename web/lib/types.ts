@@ -1,4 +1,4 @@
-type BaseElement = {
+type CanvasElement = {
     id: string;
     type: string;
     strokeColor: string;
@@ -13,27 +13,6 @@ type BaseElement = {
     height: number;
 };
 
-// type Rectangle = BaseElement & {
-//     // Top Left
-//     x: number;
-//     y: number;
-//     width: number;
-//     height: number;
-// };
-
-type CanvasElement = BaseElement;
-
-type Interaction =
-    | "idle"
-    | "drawing"
-    | "selecting"
-    | "dragging"
-    | "resizing"
-    | "panning";
-// | { type: "dragging"; elementId: string; offsetX: number; offsetY: number }
-// | { type: "resizing"; elementId: string; handle: ResizeHandle }
-// | { type: "panning"; startX: number; startY: number };
-
 type Tool =
     | "select"
     | "rectangle"
@@ -45,9 +24,9 @@ type Tool =
     | "hand";
 
 type PreviewElementStore = {
-    previewElement: BaseElement | null;
+    previewElement: CanvasElement | null;
 
-    setPreviewElement: (element: BaseElement | null) => void;
+    setPreviewElement: (element: CanvasElement | null) => void;
 
     clearPreviewElement: () => void;
 };
