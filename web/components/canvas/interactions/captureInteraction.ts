@@ -11,6 +11,7 @@ const addCanvasElement = useCanvasElementsStore.getState().addCanvasElement;
 let x = 0;
 let y = 0;
 let pointerDown = false;
+let points = [];
 
 function onPointerDown(e: PointerEvent<HTMLCanvasElement>) {
     pointerDown = true;
@@ -25,6 +26,7 @@ function onPointerUp(e: PointerEvent<HTMLCanvasElement>) {
         addCanvasElement(previewElement);
         setPreviewElement(null);
     }
+    points = [];
 }
 
 function onPointerMove(e: PointerEvent<HTMLCanvasElement>) {
@@ -34,6 +36,20 @@ function onPointerMove(e: PointerEvent<HTMLCanvasElement>) {
 
     const boundingRect = getBoundingRectangle(x, y, currentX, currentY);
     console.log("MOVE: ", currentX, currentY, boundingRect.x, boundingRect.y);
+
+    const prev = usePreviewElementStore.getState().previewElement;
+    const tool = useSelectedToolStore.getState().selectedTool;
+
+    let points = prev?.points;
+    if (tool === "draw") {
+        points = prev?.points
+            ? [...prev.points, { x: currentX, y: currentY }]
+            : [
+                  { x: x, y: y },
+                  { x: currentX, y: currentY },
+              ];
+    }
+
     const previewElement: CanvasElement = {
         id: "2",
         type: "none",
@@ -47,15 +63,20 @@ function onPointerMove(e: PointerEvent<HTMLCanvasElement>) {
         y: boundingRect.y,
         width: boundingRect.width,
         height: boundingRect.height,
+        points: tool === "draw" ? points : [],
     };
 
-    const tool = useSelectedToolStore.getState().selectedTool;
+    // previewElement.x2 = currentX;
+    // previewElement.y2 = currentY;
+    // previewElement.x = boundingRect.x;
+    // previewElement.y = boundingRect.y;
+    // previewElement.width = boundingRect.width;
+    // previewElement.height = boundingRect.height;
+
     console.log(tool);
     if (tool === "rectangle") {
-        // Drawing Rectangle
         previewElement.type = "rectangle";
     } else if (tool === "diamond") {
-        // Drawing Diamond
         previewElement.type = "diamond";
     } else if (tool === "ellipse") {
         previewElement.type = "ellipse";
@@ -63,7 +84,10 @@ function onPointerMove(e: PointerEvent<HTMLCanvasElement>) {
         previewElement.type = "arrow";
     } else if (tool === "line") {
         previewElement.type = "line";
+    } else if (tool === "draw") {
+        previewElement.type = "draw";
     }
+
     setPreviewElement(previewElement);
 }
 

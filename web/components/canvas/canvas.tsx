@@ -1,6 +1,6 @@
 "use client";
 
-import { useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useEffect, useRef, useState } from "react";
 import renderElement from "./renderElement";
 import pointerHandler from "./interactions/captureInteraction";
 import { usePreviewElementStore } from "@/stores/usePreviewElement";

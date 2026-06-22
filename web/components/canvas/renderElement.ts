@@ -22,14 +22,15 @@ export default function renderElement(
         case "arrow":
             renderArrow(ctx, element);
             break;
+        case "draw":
+            renderDraw(ctx, element);
+            break;
     }
 }
 
 function renderRectangle(ctx: CanvasRenderingContext2D, e: CanvasElement) {
     ctx.save();
 
-    // ctx.fillStyle = e.fillColor;
-    // ctx.strokeStyle = e.strokeColor;
     ctx.lineJoin = "round";
 
     ctx.beginPath();
@@ -44,14 +45,11 @@ function renderRectangle(ctx: CanvasRenderingContext2D, e: CanvasElement) {
 function renderDiamond(ctx: CanvasRenderingContext2D, e: CanvasElement) {
     ctx.save();
 
-    // ctx.fillStyle = e.fillColor;
-    // ctx.strokeStyle = e.strokeColor;
     ctx.lineJoin = "round";
 
     const cx = e.x + e.width / 2;
     const cy = e.y + e.height / 2;
 
-    // 4 vertices of the diamond, inscribed in the bounding box
     const points = [
         { x: cx, y: e.y }, // top
         { x: e.x + e.width, y: cy }, // right
@@ -69,9 +67,6 @@ function renderDiamond(ctx: CanvasRenderingContext2D, e: CanvasElement) {
 function renderEllipse(ctx: CanvasRenderingContext2D, e: CanvasElement) {
     ctx.save();
 
-    // ctx.fillStyle = e.fillColor;
-    // ctx.strokeStyle = e.strokeColor;
-
     const cx = e.x + e.width / 2;
     const cy = e.y + e.height / 2;
     const rx = Math.abs(e.width) / 2;
@@ -88,7 +83,6 @@ function renderEllipse(ctx: CanvasRenderingContext2D, e: CanvasElement) {
 function renderLine(ctx: CanvasRenderingContext2D, e: CanvasElement) {
     ctx.save();
 
-    // ctx.strokeStyle = e.strokeColor;
     ctx.lineCap = "round";
 
     ctx.beginPath();
@@ -102,7 +96,6 @@ function renderLine(ctx: CanvasRenderingContext2D, e: CanvasElement) {
 function renderArrow(ctx: CanvasRenderingContext2D, e: CanvasElement) {
     ctx.save();
 
-    // ctx.strokeStyle = e.strokeColor;
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
 
@@ -117,7 +110,6 @@ function renderArrow(ctx: CanvasRenderingContext2D, e: CanvasElement) {
     ctx.lineTo(endX, endY);
     ctx.stroke();
 
-    // Arrowhead (open "V" style, like Excalidraw's default arrow)
     const angle = Math.atan2(endY - startY, endX - startX);
     const headLength = 20;
     const headAngle = Math.PI / 7; // ~25.7deg spread
@@ -136,11 +128,7 @@ function renderArrow(ctx: CanvasRenderingContext2D, e: CanvasElement) {
 
     ctx.restore();
 }
-/**
- * Draws a closed polygon path with rounded corners by inserting a
- * quadraticCurveTo at each vertex. Used for the diamond so its corners
- * feel soft like Excalidraw's rather than sharp/pointy.
- */
+
 function drawRoundedPolygon(
     ctx: CanvasRenderingContext2D,
     points: { x: number; y: number }[],
@@ -192,4 +180,54 @@ function normalize(x: number, y: number) {
 
 function distance(a: { x: number; y: number }, b: { x: number; y: number }) {
     return Math.hypot(a.x - b.x, a.y - b.y);
+}
+
+function renderDraw(ctx: CanvasRenderingContext2D, e: CanvasElement) {
+    ctx.save();
+
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+
+    const points = e.points;
+
+    if (!points || points.length === 0) {
+        ctx.restore();
+        return;
+    }
+
+    // Single click with no movement -> draw a tiny dot
+    console.log(points.length);
+    if (points.length === 1) {
+        const p = points[0];
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, (ctx.lineWidth || 1) / 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+        return;
+    }
+
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, points[0].y);
+
+    // Smooth the path by curving through midpoints instead of
+    // drawing straight segments point-to-point. This is what gives
+    // freehand strokes their soft, hand-drawn feel like Excalidraw's
+    // pencil tool, without needing a separate stroke-smoothing library.
+    for (let i = 1; i < points.length - 1; i++) {
+        const curr = points[i];
+        const next = points[i + 1];
+        const midX = (curr.x + next.x) / 2;
+        const midY = (curr.y + next.y) / 2;
+
+        ctx.quadraticCurveTo(curr.x, curr.y, midX, midY);
+    }
+
+    // Final segment to the last actual point so the stroke doesn't
+    // stop short of where the pointer was released.
+    const last = points[points.length - 1];
+    ctx.lineTo(last.x, last.y);
+
+    ctx.stroke();
+
+    ctx.restore();
 }

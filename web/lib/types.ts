@@ -1,3 +1,8 @@
+type Point = {
+    x: number;
+    y: number;
+};
+
 type CanvasElement = {
     id: string;
     type: string;
@@ -11,6 +16,7 @@ type CanvasElement = {
     y: number;
     width: number;
     height: number;
+    points?: Point[];
 };
 
 type Tool =
@@ -21,6 +27,7 @@ type Tool =
     | "line"
     | "arrow"
     | "text"
+    | "draw"
     | "hand";
 
 type PreviewElementStore = {
