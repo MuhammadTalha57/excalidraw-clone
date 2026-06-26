@@ -5,6 +5,8 @@ import renderElement from "./renderElement";
 import pointerHandler from "./interactions/captureInteraction";
 import { usePreviewElementStore } from "@/stores/usePreviewElement";
 import { useCanvasElementsStore } from "@/stores/useCanvasElements";
+import { useCameraStore } from "@/stores/useCamera";
+import { Camera } from "lucide-react";
 
 export default function Canvas() {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -17,6 +19,8 @@ export default function Canvas() {
     const previewElement = usePreviewElementStore(
         (state) => state.previewElement,
     );
+
+    const camera = useCameraStore((state) => state);
 
     useLayoutEffect(() => {
         const canvas = canvasRef.current;
@@ -33,13 +37,26 @@ export default function Canvas() {
         canvas.style.height = `${cssHeight}px`;
         canvas.width = Math.round(cssWidth * dpr);
         canvas.height = Math.round(cssHeight * dpr);
-        ctx.scale(dpr, dpr);
+        // ctx.scale(dpr, dpr);
+
+        // console.log(camera);
+        // ctx.translate(camera.offsetX, camera.offsetY);
+
+        ctx.setTransform(
+            dpr,
+            0,
+            0,
+            dpr,
+            -camera.offsetX * dpr,
+            -camera.offsetY * dpr,
+        );
+        // ctx.scale(camera.zoom, camera.zoom);
 
         for (const e of canvasElements) {
             renderElement(ctx, e);
         }
         if (previewElement) renderElement(ctx, previewElement);
-    }, [previewElement, canvasElements]);
+    }, [previewElement, canvasElements, camera]);
     return (
         <canvas
             ref={canvasRef}

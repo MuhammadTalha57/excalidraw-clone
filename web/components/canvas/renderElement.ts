@@ -1,5 +1,7 @@
 "use client";
 
+import { worldToScreen } from "@/lib/coords";
+
 export default function renderElement(
     ctx: CanvasRenderingContext2D,
     element: CanvasElement,
@@ -52,7 +54,7 @@ function renderRectangle(ctx: CanvasRenderingContext2D, e: CanvasElement) {
     ctx.lineJoin = "round";
 
     ctx.beginPath();
-    console.log("rect: ", e.x, e.y, e.width, e.height);
+    // console.log("rect: ", e.x, e.y, e.width, e.height);
     ctx.roundRect(e.x, e.y, e.width, e.height, 15);
     ctx.fill();
     ctx.stroke();
