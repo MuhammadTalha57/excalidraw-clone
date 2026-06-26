@@ -6,6 +6,7 @@ type Point = {
 type CanvasElement = {
     id: string;
     type: string;
+    strokeWidth: number;
     strokeColor: string;
     fillColor: string;
     x1: number;

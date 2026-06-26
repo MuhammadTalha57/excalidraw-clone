@@ -4,28 +4,46 @@ export default function renderElement(
     ctx: CanvasRenderingContext2D,
     element: CanvasElement,
 ) {
-    if (!ctx) return;
+    ctx.save();
+
+    ctx.lineWidth = element.strokeWidth;
+    ctx.strokeStyle = element.strokeColor;
+    ctx.fillStyle =
+        element.fillColor === "transparent"
+            ? "rgba(0,0,0,0)"
+            : element.fillColor;
+
+    ctx.lineWidth = element.strokeWidth;
+    ctx.strokeStyle = element.strokeColor;
+    ctx.fillStyle = element.fillColor;
 
     switch (element.type) {
         case "rectangle":
             renderRectangle(ctx, element);
             break;
+
         case "diamond":
             renderDiamond(ctx, element);
             break;
+
         case "ellipse":
             renderEllipse(ctx, element);
             break;
+
         case "line":
             renderLine(ctx, element);
             break;
+
         case "arrow":
             renderArrow(ctx, element);
             break;
+
         case "draw":
             renderDraw(ctx, element);
             break;
     }
+
+    ctx.restore();
 }
 
 function renderRectangle(ctx: CanvasRenderingContext2D, e: CanvasElement) {

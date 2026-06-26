@@ -3,6 +3,7 @@ import { PointerEvent } from "react";
 import { usePreviewElementStore } from "@/stores/usePreviewElement";
 import { useSelectedToolStore } from "@/stores/useSelectedTool";
 import { useCanvasElementsStore } from "@/stores/useCanvasElements";
+import { useShapeOptionsStore } from "@/stores/useShapeOptions";
 
 const setPreviewElement = usePreviewElementStore.getState().setPreviewElement;
 
@@ -53,8 +54,9 @@ function onPointerMove(e: PointerEvent<HTMLCanvasElement>) {
     const previewElement: CanvasElement = {
         id: "2",
         type: "none",
-        strokeColor: "#000000",
-        fillColor: "#000000",
+        strokeWidth: useShapeOptionsStore.getState().strokeWidth,
+        strokeColor: useShapeOptionsStore.getState().strokeColor,
+        fillColor: useShapeOptionsStore.getState().fillColor,
         x1: x,
         y1: y,
         x2: currentX,
