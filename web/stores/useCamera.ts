@@ -8,6 +8,7 @@ type CameraStore = {
     setOffsetX: (x: number) => void;
     setOffsetY: (y: number) => void;
     setZoom: (z: number) => void;
+    setCamera: (zoom: number, offsetX: number, offsetY: number) => void;
 };
 
 export const useCameraStore = create<CameraStore>((set) => ({
@@ -18,4 +19,5 @@ export const useCameraStore = create<CameraStore>((set) => ({
     setOffsetX: (offsetX) => set({ offsetX }),
     setOffsetY: (offsetY) => set({ offsetY }),
     setZoom: (zoom) => set({ zoom }),
+    setCamera: (zoom, offsetX, offsetY) => set({offsetX, offsetY, zoom}),
 }));

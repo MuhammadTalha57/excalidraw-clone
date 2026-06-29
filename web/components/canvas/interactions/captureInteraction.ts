@@ -6,8 +6,11 @@ import { handleEllipse } from "./ellipse";
 import { handleLine } from "./line";
 import { handleRectangle } from "./rectangle";
 import { useSelectedToolStore } from "@/stores/useSelectedTool";
-import { PointerEvent } from "react";
+import { PointerEvent, WheelEvent } from "react";
 import { handleHand } from "./hand";
+import { Pointer } from "lucide-react";
+import { useCameraStore } from "@/stores/useCamera";
+import { handleZoom } from "./zoom";
 
 
 let handlers: Record<any, any> = {
@@ -99,6 +102,12 @@ function onPointerMove(e: PointerEvent<HTMLCanvasElement>) {
     // }
 }
 
+function onWheel(e: WheelEvent<HTMLCanvasElement>) {
+    if(!e.ctrlKey) return;
+
+    handleZoom(e);
+}
+
 export default function pointerHandler() {
-    return { onPointerDown, onPointerUp, onPointerMove };
+    return { onPointerDown, onPointerUp, onPointerMove, onWheel};
 }

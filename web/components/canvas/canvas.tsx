@@ -6,7 +6,6 @@ import pointerHandler from "./interactions/captureInteraction";
 import { usePreviewElementStore } from "@/stores/usePreviewElement";
 import { useCanvasElementsStore } from "@/stores/useCanvasElements";
 import { useCameraStore } from "@/stores/useCamera";
-import { Camera } from "lucide-react";
 
 export default function Canvas() {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -37,19 +36,20 @@ export default function Canvas() {
         canvas.style.height = `${cssHeight}px`;
         canvas.width = Math.round(cssWidth * dpr);
         canvas.height = Math.round(cssHeight * dpr);
-        // ctx.scale(dpr, dpr);
+        
 
-        // console.log(camera);
-        // ctx.translate(camera.offsetX, camera.offsetY);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+ctx.scale(camera.zoom, camera.zoom);
+ctx.translate(-camera.offsetX, -camera.offsetY);
 
-        ctx.setTransform(
-            dpr,
-            0,
-            0,
-            dpr,
-            -camera.offsetX * dpr,
-            -camera.offsetY * dpr,
-        );
+        // ctx.setTransform(
+        //     dpr,
+        //     0,
+        //     0,
+        //     dpr,
+        //     -camera.offsetX * dpr,
+        //     -camera.offsetY * dpr,
+        // );
         // ctx.scale(camera.zoom, camera.zoom);
 
         for (const e of canvasElements) {
@@ -64,6 +64,7 @@ export default function Canvas() {
             onPointerMove={handler.onPointerMove}
             onPointerUp={handler.onPointerUp}
             onPointerDown={handler.onPointerDown}
+            onWheel={handler.onWheel}
         />
     );
 }
