@@ -36,6 +36,11 @@ function onPointerMove(points: Point[]) {
     strokeColor: useShapeOptionsStore.getState().strokeColor,
     fillColor: useShapeOptionsStore.getState().fillColor,
 
+    top: boundingRect.y,
+    bottom: boundingRect.y + boundingRect.height,
+    right: boundingRect.x + boundingRect.width,
+    left: boundingRect.x,
+
     x: boundingRect.x,
     y: boundingRect.y,
     width: boundingRect.width,

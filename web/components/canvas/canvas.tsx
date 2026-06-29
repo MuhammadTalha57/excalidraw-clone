@@ -6,65 +6,60 @@ import pointerHandler from "./interactions/captureInteraction";
 import { usePreviewElementStore } from "@/stores/usePreviewElement";
 import { useCanvasElementsStore } from "@/stores/useCanvasElements";
 import { useCameraStore } from "@/stores/useCamera";
+import { useSelectionBoxStore } from "@/stores/useSelectionBox";
 
 export default function Canvas() {
-    const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-    const handler = pointerHandler();
+  const handler = pointerHandler();
 
-    const canvasElements = useCanvasElementsStore(
-        (state) => state.canvasElements,
-    );
-    const previewElement = usePreviewElementStore(
-        (state) => state.previewElement,
-    );
+  const canvasElements = useCanvasElementsStore(
+    (state) => state.canvasElements,
+  );
+  const previewElement = usePreviewElementStore(
+    (state) => state.previewElement,
+  );
 
-    const camera = useCameraStore((state) => state);
+  const selectionBox = useSelectionBoxStore((state) => state.selectionBox,);
 
-    useLayoutEffect(() => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
+  const camera = useCameraStore((state) => state);
 
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return;
+  useLayoutEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
-        const dpr = window.devicePixelRatio || 1;
-        const cssWidth = window.innerWidth;
-        const cssHeight = window.innerHeight;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
-        canvas.style.width = `${cssWidth}px`;
-        canvas.style.height = `${cssHeight}px`;
-        canvas.width = Math.round(cssWidth * dpr);
-        canvas.height = Math.round(cssHeight * dpr);
-        
+    const dpr = window.devicePixelRatio || 1;
+    const cssWidth = window.innerWidth;
+    const cssHeight = window.innerHeight;
 
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-ctx.scale(camera.zoom, camera.zoom);
-ctx.translate(-camera.offsetX, -camera.offsetY);
+    canvas.style.width = `${cssWidth}px`;
+    canvas.style.height = `${cssHeight}px`;
+    canvas.width = Math.round(cssWidth * dpr);
+    canvas.height = Math.round(cssHeight * dpr);
 
-        // ctx.setTransform(
-        //     dpr,
-        //     0,
-        //     0,
-        //     dpr,
-        //     -camera.offsetX * dpr,
-        //     -camera.offsetY * dpr,
-        // );
-        // ctx.scale(camera.zoom, camera.zoom);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.scale(camera.zoom, camera.zoom);
+    ctx.translate(-camera.offsetX, -camera.offsetY);
 
-        for (const e of canvasElements) {
-            renderElement(ctx, e);
-        }
-        if (previewElement) renderElement(ctx, previewElement);
-    }, [previewElement, canvasElements, camera]);
-    return (
-        <canvas
-            ref={canvasRef}
-            className={`bg-[#ffffff]`}
-            onPointerMove={handler.onPointerMove}
-            onPointerUp={handler.onPointerUp}
-            onPointerDown={handler.onPointerDown}
-            onWheel={handler.onWheel}
-        />
-    );
+    for (const e of canvasElements) {
+      renderElement(ctx, e);
+    }
+    if (previewElement) renderElement(ctx, previewElement);
+
+    if(selectionBox) renderElement(ctx, selectionBox);
+
+  }, [previewElement, canvasElements, camera, selectionBox]);
+  return (
+    <canvas
+      ref={canvasRef}
+      className={`bg-[#ffffff]`}
+      onPointerMove={handler.onPointerMove}
+      onPointerUp={handler.onPointerUp}
+      onPointerDown={handler.onPointerDown}
+      onWheel={handler.onWheel}
+    />
+  );
 }

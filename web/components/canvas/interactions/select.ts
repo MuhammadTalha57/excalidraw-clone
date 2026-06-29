@@ -1,13 +1,9 @@
-import { useCanvasElementsStore } from "@/stores/useCanvasElements";
-import { usePreviewElementStore } from "@/stores/usePreviewElement";
-import { useShapeOptionsStore } from "@/stores/useShapeOptions";
+import { useSelectionBoxStore } from "@/stores/useSelectionBox";
 import { getBoundingRectangle } from "@/utils/boundingRectangle";
 
-const setPreviewElement = usePreviewElementStore.getState().setPreviewElement;
+const setSelectionBox = useSelectionBoxStore.getState().setSelectionBox;
 
-const addCanvasElement = useCanvasElementsStore.getState().addCanvasElement;
-
-export function handleDiamond(points: Point[], e: "UP" | "DOWN" | "MOVE") {
+export function handleSelect(points: Point[], e: "UP" | "DOWN" | "MOVE") {
   if (e === "UP") onPointerUp(points);
   else if (e === "MOVE") onPointerMove(points);
   else if (e === "DOWN") onPointerDown(points);
@@ -30,11 +26,11 @@ function onPointerMove(points: Point[]) {
     points[points.length - 1].y,
   );
 
-  const previewElement: Diamond = {
-    type: "diamond",
-    strokeWidth: useShapeOptionsStore.getState().strokeWidth,
-    strokeColor: useShapeOptionsStore.getState().strokeColor,
-    fillColor: useShapeOptionsStore.getState().fillColor,
+  const selectionBox: Rectangle = {
+    type: "rectangle",
+    strokeWidth: 1,
+    strokeColor: "#4C6FFF",
+    fillColor: "rgba(76, 111, 255, 0.10)",
 
     top: boundingRect.y,
     bottom: boundingRect.y + boundingRect.height,
@@ -49,14 +45,13 @@ function onPointerMove(points: Point[]) {
 
 
   // Set Preview Elements
-  setPreviewElement(previewElement);
+  setSelectionBox(selectionBox);
 }
 
 function onPointerUp(points: Point[]) {
-    const previewElemet = usePreviewElementStore.getState().previewElement;
-    if(previewElemet) {
-        addCanvasElement(previewElemet);
-        setPreviewElement(null);
+    const selectionBox = useSelectionBoxStore.getState().selectionBox;
+    if(selectionBox) {
+        setSelectionBox(null);
     }
     points = [];
 }

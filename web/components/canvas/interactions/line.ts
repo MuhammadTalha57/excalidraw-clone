@@ -27,6 +27,11 @@ function onPointerMove(points: Point[]) {
     strokeWidth: useShapeOptionsStore.getState().strokeWidth,
     strokeColor: useShapeOptionsStore.getState().strokeColor,
 
+    top: Math.min(points[0].y, points[points.length - 1].y),
+    bottom: Math.max(points[0].y, points[points.length - 1].y),
+    right: Math.min(points[0].x, points[points.length - 1].x),
+    left: Math.max(points[0].x, points[points.length - 1].x),
+
     p1: points[0],
     p2: points[points.length - 1],
   };

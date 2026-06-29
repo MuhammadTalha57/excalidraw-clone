@@ -3,27 +3,15 @@ type Point = {
     y: number;
 };
 
-// type CanvasElement = {
-//     id: string;
-//     type: string;
-//     strokeWidth: number;
-//     strokeColor: string;
-//     fillColor: string;
-//     x1: number;
-//     y1: number;
-//     x2: number;
-//     y2: number;
-//     x: number;
-//     y: number;
-//     width: number;
-//     height: number;
-//     points?: Point[];
-// };
-
 type CanvasBaseElement = {
     // type: string;
     strokeWidth: number;
     strokeColor: string;
+
+    top: number,
+    bottom: number,
+    left: number,
+    right: number,
 };
 
 type Rectangle = CanvasBaseElement & {
@@ -65,10 +53,4 @@ type Tool =
     | "draw"
     | "hand";
 
-// type PreviewElementStore = {
-//     previewElement: CanvasBaseElement | null;
 
-//     setPreviewElement: (element: CanvasBaseElement | null) => void;
-
-//     clearPreviewElement: () => void;
-// };

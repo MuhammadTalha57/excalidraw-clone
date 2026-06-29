@@ -11,6 +11,7 @@ import { handleHand } from "./hand";
 import { Pointer } from "lucide-react";
 import { useCameraStore } from "@/stores/useCamera";
 import { handleZoom } from "./zoom";
+import { handleSelect } from "./select";
 
 
 let handlers: Record<any, any> = {
@@ -21,6 +22,7 @@ let handlers: Record<any, any> = {
     "line": handleLine,
     "draw": handleHandDrawn,
     "hand": handleHand,
+    "select": handleSelect
 }
 let points: Point[] = [];
 let pointerDown = false;
@@ -50,56 +52,7 @@ function onPointerMove(e: PointerEvent<HTMLCanvasElement>) {
     const tool = useSelectedToolStore.getState().selectedTool;
     handlers[tool](points, "MOVE");
 
-    // if (tool === "hand") {
-    //     // Panning
-    //     let currentOffsetX = coords.x - currentX;
-    //     let currentOffsetY = coords.y - currentY;
-    //     const setOffsetX = useCameraStore.getState().setOffsetX;
-    //     const setOffsetY = useCameraStore.getState().setOffsetY;
-
-    //     setOffsetX(
-    //         useCameraStore.getState().offsetX + currentOffsetX * PAN_SPEED,
-    //     );
-    //     setOffsetY(
-    //         useCameraStore.getState().offsetY - currentOffsetY * PAN_SPEED,
-    //     );
-    //     console.log("PANNING");
-    //     currentX = coords.x;
-    //     currentY = coords.y;
-    // } else if (
-    //     ["draw", "rectangle", "diamond", "ellipse", "arrow", "line"].includes(
-    //         tool,
-    //     )
-    // ) {
-    //     currentX = coords.x;
-    //     currentY = coords.y;
-    //     const prev = usePreviewElementStore.getState().previewElement;
-    //     const boundingRect = getBoundingRectangle(x, y, currentX, currentY);
-    //     let points = prev?.points;
-    //     points = prev?.points
-    //         ? [...prev.points, { x: currentX, y: currentY }]
-    //         : [
-    //               { x: x, y: y },
-    //               { x: currentX, y: currentY },
-    //           ];
-    //     const previewElement: CanvasElement = {
-    //         id: "2",
-    //         type: tool,
-    //         strokeWidth: useShapeOptionsStore.getState().strokeWidth,
-    //         strokeColor: useShapeOptionsStore.getState().strokeColor,
-    //         fillColor: useShapeOptionsStore.getState().fillColor,
-    //         x1: x,
-    //         y1: y,
-    //         x2: currentX,
-    //         y2: currentY,
-    //         x: boundingRect.x,
-    //         y: boundingRect.y,
-    //         width: boundingRect.width,
-    //         height: boundingRect.height,
-    //         points: tool === "draw" ? points : [],
-    //     };
-    //     setPreviewElement(previewElement);
-    // }
+ 
 }
 
 function onWheel(e: WheelEvent<HTMLCanvasElement>) {
