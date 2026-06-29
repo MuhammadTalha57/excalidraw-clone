@@ -4,7 +4,7 @@ import { useCameraStore } from "@/stores/useCamera";
 const setOffsetX = useCameraStore.getState().setOffsetX;
 const setOffsetY = useCameraStore.getState().setOffsetY;
 
-const PAN_SPEED = 1.0;
+const PAN_SPEED = 0.5;
 
 export function handleHand(points: Point[], e: "UP" | "DOWN" | "MOVE") {
   if (e === "MOVE") {
