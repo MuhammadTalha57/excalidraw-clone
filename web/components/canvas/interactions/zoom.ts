@@ -2,7 +2,7 @@ import { screenToWorld } from "@/lib/coords";
 import { useCameraStore } from "@/stores/useCamera";
 import { WheelEvent } from "react";
 
-const zoomDelta = 0.01;
+const zoomDelta = 0.05;
 
 export function handleZoom(e: WheelEvent<HTMLCanvasElement>) {
   if (!e.ctrlKey) return;
@@ -10,13 +10,15 @@ export function handleZoom(e: WheelEvent<HTMLCanvasElement>) {
 
   const camera = useCameraStore.getState();
 
-  const worldCoords = screenToWorld(e.clientX, e.clientY);
-
   const factor = e.deltaY < 0 ? zoomDelta : -zoomDelta;
-  const newZoom = camera.zoom + factor;
+
+  const world = screenToWorld(e.clientX, e.clientY);
+
+  const newZoom = Math.max(0.1, camera.zoom + factor);
+
   camera.setCamera(
     newZoom,
-    e.clientX - worldCoords.x * newZoom,
-    e.clientY - worldCoords.y * newZoom,
+    world.x - e.clientX / newZoom,
+    world.y - e.clientY / newZoom,
   );
 }

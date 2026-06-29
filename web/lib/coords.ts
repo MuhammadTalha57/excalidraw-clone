@@ -2,16 +2,18 @@ import { useCameraStore } from "@/stores/useCamera";
 
 export function screenToWorld(x: number, y: number) {
     const camera = useCameraStore.getState();
+
     return {
-        x: (x + camera.offsetX) / camera.zoom,
-        y: (y + camera.offsetY) / camera.zoom,
+        x: x / camera.zoom + camera.offsetX,
+        y: y / camera.zoom + camera.offsetY,
     };
 }
 
 export function worldToScreen(x: number, y: number) {
     const camera = useCameraStore.getState();
+
     return {
-        x: x * camera.zoom - camera.offsetX,
-        y: y * camera.zoom - camera.offsetY,
+        x: (x - camera.offsetX) * camera.zoom,
+        y: (y - camera.offsetY) * camera.zoom,
     };
 }
