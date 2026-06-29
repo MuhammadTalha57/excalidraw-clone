@@ -1,6 +1,11 @@
 "use client";
 
-import { worldToScreen } from "@/lib/coords";
+// ─── Constants ───────────────────────────────────────────────────────────────
+
+const SELECTION_COLOR = "#4C6FFF";
+const HANDLE_SIZE = 8;
+
+// ─── Public API ──────────────────────────────────────────────────────────────
 
 export default function renderElement(
   ctx: CanvasRenderingContext2D,
@@ -16,179 +21,200 @@ export default function renderElement(
       element.fillColor === "transparent" ? "rgba(0,0,0,0)" : element.fillColor;
   }
 
-  if (!element.isSelected) {
-    switch (element.type) {
-      case "rectangle":
-        renderRectangle(ctx, element);
-        break;
+  switch (element.type) {
+    case "rectangle":  renderRectangle(ctx, element); break;
+    case "diamond":    renderDiamond(ctx, element);   break;
+    case "ellipse":    renderEllipse(ctx, element);   break;
+    case "line":       renderLine(ctx, element);      break;
+    case "arrow":      renderArrow(ctx, element);     break;
+    case "handdrawn":  renderDraw(ctx, element);      break;
+  }
 
-      case "diamond":
-        renderDiamond(ctx, element);
-        break;
+  if (element.isSelected) {
+    renderSelectionOverlay(ctx, element);
+  }
 
-      case "ellipse":
-        renderEllipse(ctx, element);
-        break;
+  ctx.restore();
+}
 
-      case "line":
-        renderLine(ctx, element);
-        break;
+// ─── Selection overlay ───────────────────────────────────────────────────────
 
-      case "arrow":
-        renderArrow(ctx, element);
-        break;
+function renderSelectionOverlay(
+  ctx: CanvasRenderingContext2D,
+  element: CanvasElement,
+) {
+  ctx.save();
+  ctx.strokeStyle = SELECTION_COLOR;
+  ctx.fillStyle = "#ffffff";
+  ctx.lineWidth = 1.5;
 
-      case "handdrawn":
-        renderDraw(ctx, element);
-        break;
+  if (element.type === "line" || element.type === "arrow") {
+    // Just 2 endpoint handles — no bounding box needed
+    renderHandle(ctx, element.p1.x, element.p1.y);
+    renderHandle(ctx, element.p2.x, element.p2.y);
+  } else {
+    // Dashed bounding box
+    const pad = 6;
+    const x = element.left  - pad;
+    const y = element.top   - pad;
+    const w = (element.right  - element.left) + pad * 2;
+    const h = (element.bottom - element.top)  + pad * 2;
+
+    ctx.setLineDash([5, 4]);
+    ctx.strokeRect(x, y, w, h);
+    ctx.setLineDash([]);
+
+    // 8 handles at corners + edge midpoints
+    const cx = x + w / 2;
+    const cy = y + h / 2;
+    for (const [hx, hy] of [
+      [x,      y     ], [cx,     y     ], [x + w,  y     ],
+      [x,      cy    ],                   [x + w,  cy    ],
+      [x,      y + h ], [cx,     y + h ], [x + w,  y + h ],
+    ]) {
+      renderHandle(ctx, hx, hy);
     }
   }
 
   ctx.restore();
 }
 
+function renderHandle(ctx: CanvasRenderingContext2D, x: number, y: number) {
+  const half = HANDLE_SIZE / 2;
+  ctx.fillRect(x - half, y - half, HANDLE_SIZE, HANDLE_SIZE);
+  ctx.strokeRect(x - half, y - half, HANDLE_SIZE, HANDLE_SIZE);
+}
+
+// ─── Shape renderers ─────────────────────────────────────────────────────────
+
 function renderRectangle(ctx: CanvasRenderingContext2D, e: Rectangle) {
   ctx.save();
-
   ctx.lineJoin = "round";
-
   ctx.beginPath();
-  // console.log("rect: ", e.x, e.y, e.width, e.height);
   ctx.roundRect(e.x, e.y, e.width, e.height, 15);
   ctx.fill();
   ctx.stroke();
-
   ctx.restore();
 }
 
 function renderDiamond(ctx: CanvasRenderingContext2D, e: Diamond) {
   ctx.save();
-
   ctx.lineJoin = "round";
-
   const cx = e.x + e.width / 2;
   const cy = e.y + e.height / 2;
-
-  const points = [
-    { x: cx, y: e.y }, // top
-    { x: e.x + e.width, y: cy }, // right
-    { x: cx, y: e.y + e.height }, // bottom
-    { x: e.x, y: cy }, // left
-  ];
-
-  drawRoundedPolygon(ctx, points, 12);
+  drawRoundedPolygon(ctx, [
+    { x: cx,           y: e.y            },
+    { x: e.x + e.width, y: cy            },
+    { x: cx,           y: e.y + e.height },
+    { x: e.x,          y: cy             },
+  ], 12);
   ctx.fill();
   ctx.stroke();
-
   ctx.restore();
 }
 
 function renderEllipse(ctx: CanvasRenderingContext2D, e: Ellipse) {
   ctx.save();
-
-  const cx = e.x + e.width / 2;
-  const cy = e.y + e.height / 2;
-  const rx = Math.abs(e.width) / 2;
-  const ry = Math.abs(e.height) / 2;
-
   ctx.beginPath();
-  ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+  ctx.ellipse(
+    e.x + e.width / 2, e.y + e.height / 2,
+    Math.abs(e.width) / 2, Math.abs(e.height) / 2,
+    0, 0, Math.PI * 2,
+  );
   ctx.fill();
   ctx.stroke();
-
   ctx.restore();
 }
 
 function renderLine(ctx: CanvasRenderingContext2D, e: Line) {
   ctx.save();
-
   ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(e.p1.x, e.p1.y);
+  ctx.lineTo(e.p2.x, e.p2.y);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function renderArrow(ctx: CanvasRenderingContext2D, e: Arrow) {
+  ctx.save();
+  ctx.lineCap  = "round";
+  ctx.lineJoin = "round";
 
   ctx.beginPath();
   ctx.moveTo(e.p1.x, e.p1.y);
   ctx.lineTo(e.p2.x, e.p2.y);
   ctx.stroke();
 
-  ctx.restore();
-}
-
-function renderArrow(ctx: CanvasRenderingContext2D, e: Arrow) {
-  ctx.save();
-
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
-
-  const startX = e.p1.x;
-  const startY = e.p1.y;
-  const endX = e.p2.x;
-  const endY = e.p2.y;
-
-  // Shaft
-  ctx.beginPath();
-  ctx.moveTo(startX, startY);
-  ctx.lineTo(endX, endY);
-  ctx.stroke();
-
-  const angle = Math.atan2(endY - startY, endX - startX);
-  const headLength = 20;
-  const headAngle = Math.PI / 7; // ~25.7deg spread
+  const angle     = Math.atan2(e.p2.y - e.p1.y, e.p2.x - e.p1.x);
+  const headLen   = 20;
+  const headAngle = Math.PI / 7;
 
   ctx.beginPath();
   ctx.moveTo(
-    endX - headLength * Math.cos(angle - headAngle),
-    endY - headLength * Math.sin(angle - headAngle),
+    e.p2.x - headLen * Math.cos(angle - headAngle),
+    e.p2.y - headLen * Math.sin(angle - headAngle),
   );
-  ctx.lineTo(endX, endY);
+  ctx.lineTo(e.p2.x, e.p2.y);
   ctx.lineTo(
-    endX - headLength * Math.cos(angle + headAngle),
-    endY - headLength * Math.sin(angle + headAngle),
+    e.p2.x - headLen * Math.cos(angle + headAngle),
+    e.p2.y - headLen * Math.sin(angle + headAngle),
   );
   ctx.stroke();
 
   ctx.restore();
 }
+
+function renderDraw(ctx: CanvasRenderingContext2D, e: HandDrawn) {
+  ctx.save();
+  ctx.lineCap  = "round";
+  ctx.lineJoin = "round";
+
+  const pts = e.points;
+  if (!pts || pts.length === 0) { ctx.restore(); return; }
+
+  if (pts.length === 1) {
+    ctx.beginPath();
+    ctx.arc(pts[0].x, pts[0].y, (ctx.lineWidth || 1) / 2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    return;
+  }
+
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x, pts[0].y);
+  for (let i = 1; i < pts.length - 1; i++) {
+    const mid = { x: (pts[i].x + pts[i + 1].x) / 2, y: (pts[i].y + pts[i + 1].y) / 2 };
+    ctx.quadraticCurveTo(pts[i].x, pts[i].y, mid.x, mid.y);
+  }
+  ctx.lineTo(pts[pts.length - 1].x, pts[pts.length - 1].y);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+// ─── Polygon helper ───────────────────────────────────────────────────────────
 
 function drawRoundedPolygon(
   ctx: CanvasRenderingContext2D,
   points: { x: number; y: number }[],
   radius: number,
 ) {
-  const len = points.length;
-
+  const n = points.length;
   ctx.beginPath();
-
-  for (let i = 0; i < len; i++) {
+  for (let i = 0; i < n; i++) {
+    const prev = points[(i - 1 + n) % n];
     const curr = points[i];
-    const prev = points[(i - 1 + len) % len];
-    const next = points[(i + 1) % len];
-
+    const next = points[(i + 1)     % n];
     const toPrev = normalize(curr.x - prev.x, curr.y - prev.y);
     const toNext = normalize(curr.x - next.x, curr.y - next.y);
-
-    const r = Math.min(
-      radius,
-      distance(curr, prev) / 2,
-      distance(curr, next) / 2,
-    );
-
-    const start = {
-      x: curr.x - toPrev.x * r,
-      y: curr.y - toPrev.y * r,
-    };
-    const end = {
-      x: curr.x - toNext.x * r,
-      y: curr.y - toNext.y * r,
-    };
-
-    if (i === 0) {
-      ctx.moveTo(start.x, start.y);
-    } else {
-      ctx.lineTo(start.x, start.y);
-    }
-
+    const r = Math.min(radius, dist(curr, prev) / 2, dist(curr, next) / 2);
+    const start = { x: curr.x - toPrev.x * r, y: curr.y - toPrev.y * r };
+    const end   = { x: curr.x - toNext.x * r, y: curr.y - toNext.y * r };
+    if (i === 0) ctx.moveTo(start.x, start.y);
+    else         ctx.lineTo(start.x, start.y);
     ctx.quadraticCurveTo(curr.x, curr.y, end.x, end.y);
   }
-
   ctx.closePath();
 }
 
@@ -197,56 +223,6 @@ function normalize(x: number, y: number) {
   return { x: x / len, y: y / len };
 }
 
-function distance(a: { x: number; y: number }, b: { x: number; y: number }) {
+function dist(a: { x: number; y: number }, b: { x: number; y: number }) {
   return Math.hypot(a.x - b.x, a.y - b.y);
-}
-
-function renderDraw(ctx: CanvasRenderingContext2D, e: HandDrawn) {
-  ctx.save();
-
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
-
-  const points = e.points;
-
-  if (!points || points.length === 0) {
-    ctx.restore();
-    return;
-  }
-
-  // Single click with no movement -> draw a tiny dot
-  console.log(points.length);
-  if (points.length === 1) {
-    const p = points[0];
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, (ctx.lineWidth || 1) / 2, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-    return;
-  }
-
-  ctx.beginPath();
-  ctx.moveTo(points[0].x, points[0].y);
-
-  // Smooth the path by curving through midpoints instead of
-  // drawing straight segments point-to-point. This is what gives
-  // freehand strokes their soft, hand-drawn feel like Excalidraw's
-  // pencil tool, without needing a separate stroke-smoothing library.
-  for (let i = 1; i < points.length - 1; i++) {
-    const curr = points[i];
-    const next = points[i + 1];
-    const midX = (curr.x + next.x) / 2;
-    const midY = (curr.y + next.y) / 2;
-
-    ctx.quadraticCurveTo(curr.x, curr.y, midX, midY);
-  }
-
-  // Final segment to the last actual point so the stroke doesn't
-  // stop short of where the pointer was released.
-  const last = points[points.length - 1];
-  ctx.lineTo(last.x, last.y);
-
-  ctx.stroke();
-
-  ctx.restore();
 }

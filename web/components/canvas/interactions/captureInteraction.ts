@@ -38,7 +38,7 @@ function onPointerDown(e: PointerEvent<HTMLCanvasElement>) {
 }
 function onPointerUp(e: PointerEvent<HTMLCanvasElement>) {
     pointerDown = false;
-     const tool = useSelectedToolStore.getState().selectedTool;
+    const tool = useSelectedToolStore.getState().selectedTool;
     handlers[tool](points, "UP");
     points = [];
 }

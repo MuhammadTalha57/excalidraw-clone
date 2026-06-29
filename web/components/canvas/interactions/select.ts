@@ -18,7 +18,7 @@ function onPointerMove(points: Point[]) {
   // Assuming Only calls when Pointer is down
   if (points.length < 2) return;
 
-  // Create a Preview element for rectangle.
+  // Create a Selection box
 
   const boundingRect = getBoundingRectangle(
     points[0].x,
@@ -48,27 +48,29 @@ function onPointerMove(points: Point[]) {
 
   markSelectedElements(selectionBox);
 
-
-  // Set Preview Elements
+  // Set Selection Box
   setSelectionBox(selectionBox);
 }
 
 function onPointerUp(points: Point[]) {
-    const selectionBox = useSelectionBoxStore.getState().selectionBox;
-    if(selectionBox) {
-        setSelectionBox(null);
-    }
-    points = [];
+  const selectionBox = useSelectionBoxStore.getState().selectionBox;
+  if (selectionBox) {
+    setSelectionBox(null);
+  }
+  points = [];
 }
-
 
 function markSelectedElements(selectionBox: Rectangle) {
   const canvasElements = useCanvasElementsStore.getState().canvasElements;
 
-  for(const e of canvasElements) {
-    if(selectionBox.top <= e.top && selectionBox.bottom >= e.bottom && selectionBox.left <= e.left && selectionBox.right >= e.right) {
+  for (const e of canvasElements) {
+    if (
+      selectionBox.top <= e.top &&
+      selectionBox.bottom >= e.bottom &&
+      selectionBox.left <= e.left &&
+      selectionBox.right >= e.right
+    ) {
       e.isSelected = true;
     } else e.isSelected = false;
   }
-
 }
