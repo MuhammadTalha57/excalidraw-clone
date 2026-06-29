@@ -1,3 +1,4 @@
+import { useCanvasElementsStore } from "@/stores/useCanvasElements";
 import { useSelectionBoxStore } from "@/stores/useSelectionBox";
 import { getBoundingRectangle } from "@/utils/boundingRectangle";
 
@@ -41,7 +42,11 @@ function onPointerMove(points: Point[]) {
     y: boundingRect.y,
     width: boundingRect.width,
     height: boundingRect.height,
+
+    isSelected: false,
   };
+
+  markSelectedElements(selectionBox);
 
 
   // Set Preview Elements
@@ -54,4 +59,16 @@ function onPointerUp(points: Point[]) {
         setSelectionBox(null);
     }
     points = [];
+}
+
+
+function markSelectedElements(selectionBox: Rectangle) {
+  const canvasElements = useCanvasElementsStore.getState().canvasElements;
+
+  for(const e of canvasElements) {
+    if(selectionBox.top <= e.top && selectionBox.bottom >= e.bottom && selectionBox.left <= e.left && selectionBox.right >= e.right) {
+      e.isSelected = true;
+    } else e.isSelected = false;
+  }
+
 }

@@ -16,32 +16,32 @@ export default function renderElement(
       element.fillColor === "transparent" ? "rgba(0,0,0,0)" : element.fillColor;
   }
 
+  if (!element.isSelected) {
+    switch (element.type) {
+      case "rectangle":
+        renderRectangle(ctx, element);
+        break;
 
+      case "diamond":
+        renderDiamond(ctx, element);
+        break;
 
-  switch (element.type) {
-    case "rectangle":
-      renderRectangle(ctx, element);
-      break;
+      case "ellipse":
+        renderEllipse(ctx, element);
+        break;
 
-    case "diamond":
-      renderDiamond(ctx, element);
-      break;
+      case "line":
+        renderLine(ctx, element);
+        break;
 
-    case "ellipse":
-      renderEllipse(ctx, element);
-      break;
+      case "arrow":
+        renderArrow(ctx, element);
+        break;
 
-    case "line":
-      renderLine(ctx, element);
-      break;
-
-    case "arrow":
-      renderArrow(ctx, element);
-      break;
-
-    case "handdrawn":
-      renderDraw(ctx, element);
-      break;
+      case "handdrawn":
+        renderDraw(ctx, element);
+        break;
+    }
   }
 
   ctx.restore();

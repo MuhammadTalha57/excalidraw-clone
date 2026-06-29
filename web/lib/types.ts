@@ -12,6 +12,8 @@ type CanvasBaseElement = {
     bottom: number,
     left: number,
     right: number,
+
+    isSelected: boolean;
 };
 
 type Rectangle = CanvasBaseElement & {

@@ -39,6 +39,8 @@ function onPointerDown(points: Point[]) {
     right: bounds.maxX,
 
     points: points,
+
+    isSelected: false,
   };
   setPreviewElement(previewElement);
 }
@@ -74,6 +76,8 @@ function onPointerMove(points: Point[]) {
     right: bounds.maxX,
 
     points: points,
+
+    isSelected: false,
   };
 
   // Set Preview Element

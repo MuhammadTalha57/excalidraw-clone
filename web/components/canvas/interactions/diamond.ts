@@ -45,6 +45,8 @@ function onPointerMove(points: Point[]) {
     y: boundingRect.y,
     width: boundingRect.width,
     height: boundingRect.height,
+
+    isSelected: false,
   };
 
 

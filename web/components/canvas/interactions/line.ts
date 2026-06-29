@@ -34,6 +34,8 @@ function onPointerMove(points: Point[]) {
 
     p1: points[0],
     p2: points[points.length - 1],
+
+    isSelected: false,
   };
 
 
