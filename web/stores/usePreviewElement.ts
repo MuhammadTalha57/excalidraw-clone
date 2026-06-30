@@ -1,3 +1,4 @@
+import { CanvasElement } from "@/lib/types";
 import { create } from "zustand";
 
 type PreviewElementStore = {

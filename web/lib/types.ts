@@ -1,9 +1,9 @@
-type Point = {
+export type Point = {
     x: number;
     y: number;
 };
 
-type CanvasBaseElement = {
+export type CanvasBaseElement = {
     // type: string;
     strokeWidth: number;
     strokeColor: string;
@@ -16,7 +16,7 @@ type CanvasBaseElement = {
     isSelected: boolean;
 };
 
-type Rectangle = CanvasBaseElement & {
+export type Rectangle = CanvasBaseElement & {
     type: "rectangle",
     fillColor: string;
     x: number;
@@ -25,26 +25,26 @@ type Rectangle = CanvasBaseElement & {
     height: number;
 };
 
-type Diamond = Omit<Rectangle, "type"> & { type: "diamond" };
-type Ellipse = Omit<Rectangle, "type"> & { type: "ellipse" };
+export type Diamond = Omit<Rectangle, "type"> & { type: "diamond" };
+export type Ellipse = Omit<Rectangle, "type"> & { type: "ellipse" };
 
-type Line = CanvasBaseElement & {
+export type Line = CanvasBaseElement & {
     type: "line",
     p1: Point,
     p2: Point,
 };
 
-type Arrow = Omit<Line, "type"> & { type: "arrow" };
+export type Arrow = Omit<Line, "type"> & { type: "arrow" };
 
-type HandDrawn = CanvasBaseElement & {
+export type HandDrawn = CanvasBaseElement & {
     type: "handdrawn",
     points: Point[],
 };
 
 
-type CanvasElement = Rectangle | Diamond | Ellipse | Line | Arrow | HandDrawn;
+export type CanvasElement = Rectangle | Diamond | Ellipse | Line | Arrow | HandDrawn;
 
-type Tool =
+export type Tool =
     | "select"
     | "rectangle"
     | "diamond"
@@ -56,3 +56,11 @@ type Tool =
     | "hand";
 
 
+export type HandleName = "nw" | "n" | "ne" | "w" | "e" | "sw" | "s" | "se" | "p1" | "p2";
+
+export type SelectionHitTarget =
+  | { type: "handle"; handle: HandleName; element: CanvasElement }
+  | { type: "body"; element: CanvasElement }
+  | { type: "none" };
+
+  

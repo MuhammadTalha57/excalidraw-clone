@@ -1,3 +1,4 @@
+import { Tool } from "@/lib/types";
 import { create } from "zustand";
 
 type SelectedToolStore = {
