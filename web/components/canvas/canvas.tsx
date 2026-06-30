@@ -1,8 +1,8 @@
 "use client";
 
 import { useLayoutEffect, useEffect, useRef, useState } from "react";
-import renderElement from "./renderElement";
-import pointerHandler from "./interactions/captureInteraction";
+import renderElement from "../../lib/canvas/renderElement";
+import pointerHandler from "../../lib/canvas/interactions/captureInteraction";
 import { usePreviewElementStore } from "@/stores/usePreviewElement";
 import { useCanvasElementsStore } from "@/stores/useCanvasElements";
 import { useCameraStore } from "@/stores/useCamera";
