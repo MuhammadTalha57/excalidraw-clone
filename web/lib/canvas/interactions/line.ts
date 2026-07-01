@@ -29,8 +29,8 @@ function onPointerMove(points: Point[]) {
 
     top: Math.min(points[0].y, points[points.length - 1].y),
     bottom: Math.max(points[0].y, points[points.length - 1].y),
-    right: Math.min(points[0].x, points[points.length - 1].x),
-    left: Math.max(points[0].x, points[points.length - 1].x),
+    right: Math.max(points[0].x, points[points.length - 1].x),
+    left: Math.min(points[0].x, points[points.length - 1].x),
 
     p1: points[0],
     p2: points[points.length - 1],

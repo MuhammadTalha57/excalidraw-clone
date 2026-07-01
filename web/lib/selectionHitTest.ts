@@ -1,5 +1,6 @@
 // hitTest.ts
-import { SelectionHitTarget, HandleName, Point, CanvasElement, } from "./types";
+import { useSelectedElementsOverlayStore } from "@/stores/useSelectedElementsBox";
+import { SelectionHitTarget, HandleName, Point, CanvasElement, Rectangle, Line, } from "./types";
 
 const HANDLE_HIT_RADIUS = 8;
 
@@ -7,22 +8,21 @@ export function hitTest(
   point: Point,
   selectedElements: CanvasElement[],
 ): SelectionHitTarget {
+  const el = useSelectedElementsOverlayStore.getState().selectedElementsOverlay;
+  if(el === null) return {type: "none"};
+
   // Check handles first — they're small and take priority over body
-  for (const el of selectedElements) {
-    const handle = hitTestHandles(point, el);
-    if (handle) return { type: "handle", handle, element: el };
-  }
+  const handle = hitTestHandles(point, el);
+  if (handle) return { type: "handle", handle, element: el };
 
   // Then check bodies (so clicking inside a shape starts a move)
-  for (const el of selectedElements) {
-    if (isInsideBounds(point, el)) return { type: "body", element: el };
-  }
+  if (isInsideBounds(point, el)) return { type: "body", element: el };
 
   return { type: "none" };
 }
 
-function hitTestHandles(point: Point, el: CanvasElement): HandleName | null {
-  if (el.type === "line" || el.type === "arrow") {
+function hitTestHandles(point: Point, el: Rectangle | Line): HandleName | null {
+  if (el.type === "line") {
     if (dist(point, el.p1) <= HANDLE_HIT_RADIUS) return "p1";
     if (dist(point, el.p2) <= HANDLE_HIT_RADIUS) return "p2";
     return null;
@@ -35,8 +35,8 @@ function hitTestHandles(point: Point, el: CanvasElement): HandleName | null {
   return null;
 }
 
-function isInsideBounds(point: Point, el: CanvasElement): boolean {
-  if (el.type === "line" || el.type === "arrow") {
+function isInsideBounds(point: Point, el: Rectangle | Line): boolean {
+  if (el.type === "line") {
     return distToSegment(point, el.p1, el.p2) <= 6; // click near the line
   }
   return point.x >= el.left && point.x <= el.right &&

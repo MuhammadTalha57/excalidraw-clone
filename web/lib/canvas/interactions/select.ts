@@ -2,17 +2,19 @@ import { useCanvasElementsStore } from "@/stores/useCanvasElements";
 import { useSelectionBoxStore } from "@/stores/useSelectionBox";
 import { getBoundingRectangle } from "@/utils/boundingRectangle";
 import { moveElement } from "./move";
-import { CanvasElement, HandleName, Point, Rectangle } from "@/lib/types";
+import { CanvasElement, HandleName, Line, Point, Rectangle } from "@/lib/types";
 import { hitTest } from "@/lib/selectionHitTest";
+import { useSelectedElementsOverlayStore } from "@/stores/useSelectedElementsBox";
 
 const setSelectionBox = useSelectionBoxStore.getState().setSelectionBox;
+const setSelectedElementsOverlay =
+  useSelectedElementsOverlayStore.getState().setSelectedElementsOverlay;
 
 let dragMode: "none" | "move" | "resize" = "none";
 let dragStartPoint: Point | null = null;
-let dragHandle: HandleName | null  = null;
+let dragHandle: HandleName | null = null;
 let selectedElements: Map<number, CanvasElement> = new Map();
-let selectionBoxStart: Rectangle | null = null;
-
+let selectedElementsOverlayStart: Rectangle | Line | null = null;
 
 export function handleSelect(points: Point[], e: "UP" | "DOWN" | "MOVE") {
   if (e === "UP") onPointerUp(points);
@@ -24,25 +26,37 @@ function onPointerDown(points: Point[]) {
   const point = points[0];
   const selected = useCanvasElementsStore
     .getState()
-    .canvasElements.map((e, i) => ({e, i})).filter(({e}) => e.isSelected);
+    .canvasElements.map((e, i) => ({ e, i }))
+    .filter(({ e }) => e.isSelected);
 
   // Hit Test
-  const hit = hitTest(point, selected.map(element => element.e));
+  const hit = hitTest(
+    point,
+    selected.map((element) => element.e),
+  );
 
-  if(hit.type === "none") {
+  if (hit.type === "none") {
     dragMode = "none";
     return;
   }
 
-  dragMode = hit.type === "handle" ? "resize": "move";
-  dragHandle = hit.type === "handle" ? hit.handle: null;
+  dragMode = hit.type === "handle" ? "resize" : "move";
+  dragHandle = hit.type === "handle" ? hit.handle : null;
   dragStartPoint = point;
-  selectedElements = new Map(selected.map(({e, i}) => [i, {...e}]));
-  selectionBoxStart = useSelectionBoxStore.getState().selectionBox;
+  selectedElements = new Map(selected.map(({ e, i }) => [i, { ...e }]));
+  selectedElementsOverlayStart = useSelectedElementsOverlayStore.getState().selectedElementsOverlay;
 }
 
 function onPointerMove(points: Point[]) {
+  
   if (dragMode === "none") {
+    useSelectedElementsOverlayStore.getState().clearSelectedElementsOverlay();
+    const selected = useCanvasElementsStore
+      .getState()
+      .canvasElements.map((e, i) => ({ e, i }))
+      .filter(({ e }) => e.isSelected);
+  
+    selectedElements = new Map(selected.map(({ e, i }) => [i, { ...e }]));
     if (points.length < 2) return;
 
     // Create a Selection box
@@ -81,29 +95,40 @@ function onPointerMove(points: Point[]) {
     return;
   }
 
-
-  if(dragMode === "move") {
+  if (dragMode === "move") {
     let dx = points[points.length - 1].x - dragStartPoint!.x;
     let dy = points[points.length - 1].y - dragStartPoint!.y;
-    
+
     // Move Elements
     const updateElement = useCanvasElementsStore.getState().updateCanvasElement;
-    for(const [i, e] of selectedElements) {
+    for (const [i, e] of selectedElements) {
       updateElement(i, moveElement(e, dx, dy));
     }
 
     // Move Selection Box and update selection box
-    if(selectionBoxStart) {
-      useSelectionBoxStore.getState().setSelectionBox({
-        ...selectionBoxStart,
-        x: selectionBoxStart.x + dx,
-        y: selectionBoxStart.y  + dy,
-        top: selectionBoxStart.top + dy,
-        bottom: selectionBoxStart.bottom + dy,
-        left: selectionBoxStart.left + dx,
-        right: selectionBoxStart.right + dx,
-      })
-      
+    if (selectedElementsOverlayStart) {
+      if(selectedElementsOverlayStart.type === "rectangle") {
+
+        useSelectedElementsOverlayStore.getState().setSelectedElementsOverlay({
+          ...selectedElementsOverlayStart,
+          x: selectedElementsOverlayStart.x + dx,
+          y: selectedElementsOverlayStart.y + dy,
+          top: selectedElementsOverlayStart.top + dy,
+          bottom: selectedElementsOverlayStart.bottom + dy,
+          left: selectedElementsOverlayStart.left + dx,
+          right: selectedElementsOverlayStart.right + dx,
+        });
+      } else {
+        useSelectedElementsOverlayStore.getState().setSelectedElementsOverlay({
+          ...selectedElementsOverlayStart,
+          p1: {x: selectedElementsOverlayStart.p1.x + dx, y: selectedElementsOverlayStart.p1.y + dy},
+          p2: {x: selectedElementsOverlayStart.p2.x + dx, y: selectedElementsOverlayStart.p2.y + dy},
+          top: selectedElementsOverlayStart.top + dy,
+          bottom: selectedElementsOverlayStart.bottom + dy,
+          left: selectedElementsOverlayStart.left + dx,
+          right: selectedElementsOverlayStart.right + dx,
+        });
+      }
     }
   } else {
     // Resize
@@ -114,14 +139,17 @@ function onPointerUp(points: Point[]) {
   const selectionBox = useSelectionBoxStore.getState().selectionBox;
   if (selectionBox) {
     setSelectionBox(null);
+
+    // Create Selected Elements Overlay
+    if (selectedElements.size > 0) {
+      createSelectedElementsOverlay();
+    }
   }
   points = [];
 
   dragMode = "none";
   dragStartPoint = null;
   selectedElements.clear();
-
-  
 }
 
 function markSelectedElements(selectionBox: Rectangle) {
@@ -137,4 +165,67 @@ function markSelectedElements(selectionBox: Rectangle) {
       e.isSelected = true;
     } else e.isSelected = false;
   }
+}
+
+function createSelectedElementsOverlay() {
+  let selectedElementsOverlay: Rectangle | Line | null = null;
+  if (selectedElements.size === 1) {
+    const e = selectedElements.values().toArray()[0];
+
+    if (e.type === "line" || e.type === "arrow") {
+      // Create selected elements overlay
+      selectedElementsOverlay = {
+        type: "line",
+        strokeWidth: 1,
+        strokeColor: "#4C6FFF",
+
+        top: e.top,
+        bottom: e.bottom,
+        right: e.right,
+        left: e.left,
+
+        p1: e.p1,
+        p2: e.p2,
+
+        isSelected: false,
+      };
+
+      setSelectedElementsOverlay(selectedElementsOverlay);
+
+      return;
+    }
+  }
+
+  // Calculate bounds
+  let temp = selectedElements.values().reduce(
+    (acc, e) => ({
+      top: Math.min(acc.top, e.top),
+      bottom: Math.max(acc.bottom, e.bottom),
+      left: Math.min(acc.left, e.left),
+      right: Math.max(acc.right, e.right),
+    }),
+    { top: Infinity, bottom: -Infinity, left: Infinity, right: -Infinity },
+  );
+
+  // Create selected elements overlay
+  selectedElementsOverlay = {
+    type: "rectangle",
+    strokeWidth: 1,
+    strokeColor: "#4C6FFF",
+    fillColor: "rgba(76, 111, 255, 0.10)",
+
+    top: temp.top,
+    bottom: temp.bottom,
+    right: temp.right,
+    left: temp.left,
+
+    x: temp.left,
+    y: temp.top,
+    width: Math.abs(temp.right - temp.left),
+    height: Math.abs(temp.top - temp.bottom),
+
+    isSelected: false,
+  };
+
+  setSelectedElementsOverlay(selectedElementsOverlay);
 }

@@ -1,12 +1,13 @@
 "use client";
 
 import { useLayoutEffect, useEffect, useRef, useState } from "react";
-import renderElement from "../../lib/canvas/renderElement";
+import renderElement, { renderSelectedElementsOverlay } from "../../lib/canvas/renderElement";
 import pointerHandler from "../../lib/canvas/interactions/captureInteraction";
 import { usePreviewElementStore } from "@/stores/usePreviewElement";
 import { useCanvasElementsStore } from "@/stores/useCanvasElements";
 import { useCameraStore } from "@/stores/useCamera";
 import { useSelectionBoxStore } from "@/stores/useSelectionBox";
+import { useSelectedElementsOverlayStore } from "@/stores/useSelectedElementsBox";
 
 export default function Canvas() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -21,6 +22,8 @@ export default function Canvas() {
   );
 
   const selectionBox = useSelectionBoxStore((state) => state.selectionBox,);
+
+  const selectedElementsOverlay = useSelectedElementsOverlayStore((state) => state.selectedElementsOverlay);
 
   const camera = useCameraStore((state) => state);
 
@@ -51,7 +54,9 @@ export default function Canvas() {
 
     if(selectionBox) renderElement(ctx, selectionBox);
 
-  }, [previewElement, canvasElements, camera, selectionBox]);
+    if(selectedElementsOverlay) renderSelectedElementsOverlay(ctx, selectedElementsOverlay);
+
+  }, [previewElement, canvasElements, camera, selectionBox, selectedElementsOverlay]);
   return (
     <canvas
       ref={canvasRef}
