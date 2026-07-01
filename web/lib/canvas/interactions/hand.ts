@@ -1,3 +1,4 @@
+import { Point } from "@/lib/types";
 import { useCameraStore } from "@/stores/useCamera";
 
 

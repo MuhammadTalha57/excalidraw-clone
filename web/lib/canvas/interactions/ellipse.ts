@@ -1,3 +1,4 @@
+import { Ellipse, Point } from "@/lib/types";
 import { useCanvasElementsStore } from "@/stores/useCanvasElements";
 import { usePreviewElementStore } from "@/stores/usePreviewElement";
 import { useShapeOptionsStore } from "@/stores/useShapeOptions";

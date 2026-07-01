@@ -132,6 +132,7 @@ function onPointerMove(points: Point[]) {
     }
   } else {
     // Resize
+    
   }
 }
 

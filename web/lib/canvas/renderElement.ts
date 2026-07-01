@@ -1,6 +1,6 @@
 "use client";
 
-import { CanvasElement, Line, Rectangle } from "../types";
+import { Arrow, CanvasElement, Diamond, Ellipse, HandDrawn, Line, Rectangle } from "../types";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 

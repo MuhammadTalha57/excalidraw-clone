@@ -12,6 +12,7 @@ import { Pointer } from "lucide-react";
 import { useCameraStore } from "@/stores/useCamera";
 import { handleZoom } from "./zoom";
 import { handleSelect } from "./select";
+import { Point } from "@/lib/types";
 
 
 let handlers: Record<any, any> = {
