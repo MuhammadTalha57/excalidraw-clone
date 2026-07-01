@@ -1,5 +1,6 @@
 "use client";
 
+import { Tool } from "@/lib/types";
 import { useSelectedToolStore } from "@/stores/useSelectedTool";
 import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 
