@@ -1,6 +1,8 @@
 "use client";
 
+import { joinSession, startSession } from "@/lib/socket";
 import { Tool } from "@/lib/types";
+import { useCanvasElementsStore } from "@/stores/useCanvasElements";
 import { useSelectedToolStore } from "@/stores/useSelectedTool";
 import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 
@@ -146,6 +148,8 @@ export default function Toolbar({
                 }}
             >
                 <div className="flex items-center whitespace-nowrap">
+
+
                     {items.map((item, index) => {
                         const isSelected = selectedTool === item.name;
                         const group = TOOL_GROUPS.get(item.name) ?? 0;
