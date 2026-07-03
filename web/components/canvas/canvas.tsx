@@ -8,6 +8,7 @@ import { useCanvasElementsStore } from "@/stores/useCanvasElements";
 import { useCameraStore } from "@/stores/useCamera";
 import { useSelectionBoxStore } from "@/stores/useSelectionBox";
 import { useSelectedElementsOverlayStore } from "@/stores/useSelectedElementsBox";
+import { useSelectedToolStore } from "@/stores/useSelectedTool";
 
 export default function Canvas() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -26,6 +27,16 @@ export default function Canvas() {
   const selectedElementsOverlay = useSelectedElementsOverlayStore((state) => state.selectedElementsOverlay);
 
   const camera = useCameraStore((state) => state);
+
+  const selectedTool = useSelectedToolStore((state) => state.selectedTool);
+  const cursorClass =
+    selectedTool === "hand"
+        ? "grab"
+        : selectedTool === "select"
+        ? "default"
+        : "crosshair";
+
+
 
   useLayoutEffect(() => {
     const canvas = canvasRef.current;
@@ -60,6 +71,7 @@ export default function Canvas() {
   return (
     <canvas
       ref={canvasRef}
+      style={{cursor: cursorClass}}
       className={`bg-[#ffffff]`}
       onPointerMove={handler.onPointerMove}
       onPointerUp={handler.onPointerUp}
