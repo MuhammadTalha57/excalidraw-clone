@@ -18,7 +18,7 @@ export const useCanvasElementsStore = create<CanvasElementsStore>((set) => ({
   addCanvasElement: (element) =>
     set((state) => {
       const nextElements = [...state.canvasElements, element];
-      getSocket().emit("element-update", { elements: nextElements });
+      getSocket().emit("element-add", { element: element });
       return {
         canvasElements: nextElements,
       };

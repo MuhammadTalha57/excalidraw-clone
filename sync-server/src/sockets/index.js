@@ -104,8 +104,17 @@ export function registerSocketHandlers(io) {
       scheduleSave(currentSessionId);
     });
 
-    // Optional - skip wiring this up on the frontend if you're short on time,
-    // nothing else depends on it.
+    socket.on("element-add", ({ element } = {}) => {
+      if (!currentSessionId) return;
+
+      const state = activeSessions.get(currentSessionId);
+      if (!state) return;
+
+      state.elements.push(element);
+      socket.to(currentSessionId).emit("element-add", { element });
+      scheduleSave(currentSessionId);
+    });
+
     socket.on("cursor-move", (payload = {}) => {
       if (!currentSessionId) return;
       socket.to(currentSessionId).emit("cursor-move", {

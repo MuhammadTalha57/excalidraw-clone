@@ -22,6 +22,7 @@ let socketListenersBound = false;
 const syncServerUrl = process.env.NEXT_PUBLIC_SYNC_SERVER_URL;
 
 const setCanvasElements = useCanvasElementsStore.getState().setCanvasElements;
+const addCanvasElement = useCanvasElementsStore.getState().addCanvasElement;
 const {
     clearSessionState,
     setSessionError,
@@ -53,6 +54,12 @@ function bindSocketListeners() {
     currentSocket.on("element-update", ({ elements }: { elements?: CanvasElement[] }) => {
         if (Array.isArray(elements)) {
             setCanvasElements(elements);
+        }
+    });
+
+    currentSocket.on("element-add", ({ element }: { element?: CanvasElement }) => {
+        if (element) {
+            addCanvasElement(element);
         }
     });
 
