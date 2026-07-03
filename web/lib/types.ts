@@ -51,8 +51,8 @@ export type Tool =
     | "ellipse"
     | "line"
     | "arrow"
-    | "text"
     | "draw"
+    | "eraser"
     | "hand";
 
 

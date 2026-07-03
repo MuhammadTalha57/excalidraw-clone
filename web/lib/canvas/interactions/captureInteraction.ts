@@ -8,12 +8,9 @@ import { handleRectangle } from "./rectangle";
 import { useSelectedToolStore } from "@/stores/useSelectedTool";
 import { PointerEvent, WheelEvent } from "react";
 import { handleHand } from "./hand";
-import { Pointer } from "lucide-react";
-import { useCameraStore } from "@/stores/useCamera";
 import { handleZoom } from "./zoom";
 import { handleSelect } from "./select";
 import { Point } from "@/lib/types";
-import { useSelectedElementsOverlayStore } from "@/stores/useSelectedElementsBox";
 
 
 let handlers: Record<any, any> = {

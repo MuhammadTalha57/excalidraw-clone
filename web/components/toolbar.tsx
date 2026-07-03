@@ -1,8 +1,6 @@
 "use client";
 
-import { joinSession, startSession } from "@/lib/socket";
 import { Tool } from "@/lib/types";
-import { useCanvasElementsStore } from "@/stores/useCanvasElements";
 import { useSelectedToolStore } from "@/stores/useSelectedTool";
 import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 
@@ -56,16 +54,6 @@ export const defaultToolbarItems: ToolbarItem[] = [
         selectedIcon: <DrawIcon active />,
     },
     {
-        name: "text",
-        icon: <TextIcon />,
-        selectedIcon: <TextIcon active />,
-    },
-    {
-        name: "image",
-        icon: <ImageIcon />,
-        selectedIcon: <ImageIcon active />,
-    },
-    {
         name: "eraser",
         icon: <EraserIcon />,
         selectedIcon: <EraserIcon active />,
@@ -86,8 +74,6 @@ const TOOL_GROUPS = new Map<string, number>([
     ["arrow", 1],
     ["line", 1],
     ["draw", 2],
-    ["text", 2],
-    ["image", 2],
     ["eraser", 2],
 ]);
 
