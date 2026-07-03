@@ -13,6 +13,7 @@ import { useCameraStore } from "@/stores/useCamera";
 import { handleZoom } from "./zoom";
 import { handleSelect } from "./select";
 import { Point } from "@/lib/types";
+import { useSelectedElementsOverlayStore } from "@/stores/useSelectedElementsBox";
 
 
 let handlers: Record<any, any> = {

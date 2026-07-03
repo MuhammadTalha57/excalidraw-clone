@@ -1,6 +1,7 @@
 import { Arrow, Point } from "@/lib/types";
 import { useCanvasElementsStore } from "@/stores/useCanvasElements";
 import { usePreviewElementStore } from "@/stores/usePreviewElement";
+import { useSelectedElementsOverlayStore } from "@/stores/useSelectedElementsBox";
 import { useShapeOptionsStore } from "@/stores/useShapeOptions";
 
 const setPreviewElement = usePreviewElementStore.getState().setPreviewElement;
