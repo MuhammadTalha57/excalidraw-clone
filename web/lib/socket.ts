@@ -5,7 +5,7 @@ import { useCanvasElementsStore } from "@/stores/useCanvasElements";
 import { useSessionStore } from "@/stores/useSessionStore";
 
 type JoinAck = {
-    elements?: CanvasElement[];
+    elements?: Map<string, CanvasElement>;
     isHost?: boolean;
     error?: string;
 };
@@ -23,6 +23,7 @@ const syncServerUrl = process.env.NEXT_PUBLIC_SYNC_SERVER_URL;
 
 const setCanvasElements = useCanvasElementsStore.getState().setCanvasElements;
 const addCanvasElement = useCanvasElementsStore.getState().addCanvasElement;
+const updateCanvasElement = useCanvasElementsStore.getState().updateCanvasElement;
 const {
     clearSessionState,
     setSessionError,
@@ -51,10 +52,8 @@ function bindSocketListeners() {
 
     const currentSocket = getSocket();
 
-    currentSocket.on("element-update", ({ elements }: { elements?: CanvasElement[] }) => {
-        if (Array.isArray(elements)) {
-            setCanvasElements(elements);
-        }
+    currentSocket.on("element-update", ({ id, element }: { id: string, element: Partial<CanvasElement> }) => {
+        updateCanvasElement(id, element);
     });
 
     currentSocket.on("element-add", ({ element }: { element?: CanvasElement }) => {
@@ -72,7 +71,7 @@ function bindSocketListeners() {
     socketListenersBound = true;
 }
 
-function storeLocalBoard(elements: CanvasElement[]) {
+function storeLocalBoard(elements: Map<string, CanvasElement>) {
     localStorage.setItem("local-board", JSON.stringify(elements));
 }
 
@@ -97,7 +96,7 @@ function emitJoinSession(
     });
 }
 
-export async function startSession(elements: CanvasElement[], name: string) {
+export async function startSession(elements: Map<string, CanvasElement>, name: string) {
     setSessionError(null);
     setSessionPending(true);
     storeLocalBoard(elements);
@@ -154,7 +153,7 @@ export async function joinSession(sessionId: string, name: string) {
             throw new Error(payload.error || "Session not found or expired");
         }
 
-        const payload: { elements: CanvasElement[] } = await response.json();
+        const payload: { elements: Map<string, CanvasElement> } = await response.json();
         storeLocalBoard(useCanvasElementsStore.getState().canvasElements);
         setCanvasElements(payload.elements);
 
