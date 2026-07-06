@@ -1,5 +1,8 @@
 {
   "functions": {
-    "api/socket.ts": { "maxDuration": 300 }
-  }
+    "src/api/socket.ts": { "maxDuration": 300 }
+  },
+  "rewrites": [
+    { "source": "/api/socket/(.*)", "destination": "/src/api/socket" }
+  ]
 }
