@@ -100,53 +100,6 @@ export function renderSelectedElementsOverlay(
   }
 }
 
-// ─── Selection overlay ───────────────────────────────────────────────────────
-
-// function renderSelectionOverlay(
-//   ctx: CanvasRenderingContext2D,
-//   element: CanvasElement,
-// ) {
-//   ctx.save();
-//   ctx.strokeStyle = SELECTION_COLOR;
-//   ctx.fillStyle = "#ffffff";
-//   ctx.lineWidth = 1.5;
-
-//   if (element.type === "line" || element.type === "arrow") {
-//     // Just 2 endpoint handles — no bounding box needed
-//     renderHandle(ctx, element.p1.x, element.p1.y);
-//     renderHandle(ctx, element.p2.x, element.p2.y);
-//   } else {
-//     // Dashed bounding box
-//     const pad = 6;
-//     const x = element.left - pad;
-//     const y = element.top - pad;
-//     const w = element.right - element.left + pad * 2;
-//     const h = element.bottom - element.top + pad * 2;
-
-//     ctx.setLineDash([5, 4]);
-//     ctx.strokeRect(x, y, w, h);
-//     ctx.setLineDash([]);
-
-//     // 8 handles at corners + edge midpoints
-//     const cx = x + w / 2;
-//     const cy = y + h / 2;
-//     for (const [hx, hy] of [
-//       [x, y],
-//       [cx, y],
-//       [x + w, y],
-//       [x, cy],
-//       [x + w, cy],
-//       [x, y + h],
-//       [cx, y + h],
-//       [x + w, y + h],
-//     ]) {
-//       renderHandle(ctx, hx, hy);
-//     }
-//   }
-
-//   ctx.restore();
-// }
-
 function renderHandle(ctx: CanvasRenderingContext2D, x: number, y: number) {
   const half = HANDLE_SIZE / 2;
   ctx.fillRect(x - half, y - half, HANDLE_SIZE, HANDLE_SIZE);
