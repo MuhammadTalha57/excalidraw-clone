@@ -41,7 +41,11 @@ function getSyncServerUrl(): string {
 
 export function getSocket(): Socket {
     if (!socket) {
-        socket = io(getSyncServerUrl(), { autoConnect: false });
+        // socket = io(getSyncServerUrl(), { autoConnect: false });
+        socket = io(getSyncServerUrl(), {
+  path: "/api/socket/socket.io",   // must match the function's route path
+  transports: ["websocket"],       // required — skip long-polling, it doesn't play well with Vercel functions
+});
     }
 
     return socket;
