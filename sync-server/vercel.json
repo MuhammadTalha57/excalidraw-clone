@@ -1,8 +1,9 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "functions": {
-    "src/api/socket.ts": { "maxDuration": 300 }
+    "api/socket.ts": { "maxDuration": 800 }
   },
   "rewrites": [
-    { "source": "/api/socket/(.*)", "destination": "/src/api/socket" }
+    { "source": "/api/socket/(.*)", "destination": "/api/socket" }
   ]
 }
