@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { CanvasElement } from "../lib/types";
 
 const TTL_SECONDS = Number(process.env.SESSION_TTL_SECONDS || 86400);
 
