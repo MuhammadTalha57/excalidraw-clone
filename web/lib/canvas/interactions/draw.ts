@@ -1,3 +1,4 @@
+import { generateId } from "@/lib/id";
 import { HandDrawn, Point } from "@/lib/types";
 import { useCanvasElementsStore } from "@/stores/useCanvasElements";
 import { usePreviewElementStore } from "@/stores/usePreviewElement";
@@ -30,6 +31,7 @@ function onPointerDown(points: Point[]) {
   );
 
   const previewElement: HandDrawn = {
+    id: generateId(),
     type: "handdrawn",
     strokeWidth: useShapeOptionsStore.getState().strokeWidth,
     strokeColor: useShapeOptionsStore.getState().strokeColor,
@@ -67,6 +69,7 @@ function onPointerMove(points: Point[]) {
   );
 
   const previewElement: HandDrawn = {
+    id: generateId(),
     type: "handdrawn",
     strokeWidth: useShapeOptionsStore.getState().strokeWidth,
     strokeColor: useShapeOptionsStore.getState().strokeColor,

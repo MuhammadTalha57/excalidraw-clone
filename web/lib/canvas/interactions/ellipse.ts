@@ -1,3 +1,4 @@
+import { generateId } from "@/lib/id";
 import { Ellipse, Point } from "@/lib/types";
 import { useCanvasElementsStore } from "@/stores/useCanvasElements";
 import { usePreviewElementStore } from "@/stores/usePreviewElement";
@@ -32,6 +33,7 @@ function onPointerMove(points: Point[]) {
   );
 
   const previewElement: Ellipse = {
+    id: generateId(),
     type: "ellipse",
     strokeWidth: useShapeOptionsStore.getState().strokeWidth,
     strokeColor: useShapeOptionsStore.getState().strokeColor,

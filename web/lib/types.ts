@@ -1,3 +1,5 @@
+import { generateId } from "./id";
+
 export type Point = {
     x: number;
     y: number;
@@ -14,6 +16,8 @@ export type CanvasBaseElement = {
     right: number,
 
     isSelected: boolean;
+    // isErased: boolean;
+    id: string;
 };
 
 export type Rectangle = CanvasBaseElement & {

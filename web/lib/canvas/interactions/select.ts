@@ -5,6 +5,7 @@ import { moveElement } from "./move";
 import { CanvasElement, HandleName, Line, Point, Rectangle } from "@/lib/types";
 import { hitTest } from "@/lib/selectionHitTest";
 import { useSelectedElementsOverlayStore } from "@/stores/useSelectedElementsBox";
+import { generateId } from "@/lib/id";
 
 const setSelectionBox = useSelectionBoxStore.getState().setSelectionBox;
 const setSelectedElementsOverlay =
@@ -69,6 +70,7 @@ function onPointerMove(points: Point[]) {
     );
 
     const selectionBox: Rectangle = {
+      id: generateId(),
       type: "rectangle",
       strokeWidth: 1,
       strokeColor: "#4C6FFF",
@@ -176,6 +178,7 @@ function createSelectedElementsOverlay() {
     if (e.type === "line" || e.type === "arrow") {
       // Create selected elements overlay
       selectedElementsOverlay = {
+        id: generateId(),
         type: "line",
         strokeWidth: 1,
         strokeColor: "#4C6FFF",
@@ -210,6 +213,7 @@ function createSelectedElementsOverlay() {
 
   // Create selected elements overlay
   selectedElementsOverlay = {
+    id: generateId(),
     type: "rectangle",
     strokeWidth: 1,
     strokeColor: "#4C6FFF",

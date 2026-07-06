@@ -1,3 +1,4 @@
+import { generateId } from "@/lib/id";
 import { Point, Rectangle } from "@/lib/types";
 import { useCanvasElementsStore } from "@/stores/useCanvasElements";
 import { usePreviewElementStore } from "@/stores/usePreviewElement";
@@ -32,6 +33,7 @@ function onPointerMove(points: Point[]) {
   );
 
   const previewElement: Rectangle = {
+    id: generateId(),
     type: "rectangle",
     strokeWidth: useShapeOptionsStore.getState().strokeWidth,
     strokeColor: useShapeOptionsStore.getState().strokeColor,

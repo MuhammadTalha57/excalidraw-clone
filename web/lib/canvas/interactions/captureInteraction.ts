@@ -11,6 +11,7 @@ import { handleHand } from "./hand";
 import { handleZoom } from "./zoom";
 import { handleSelect } from "./select";
 import { Point } from "@/lib/types";
+import { handleEraser } from "./eraser";
 
 
 let handlers: Record<any, any> = {
@@ -21,7 +22,8 @@ let handlers: Record<any, any> = {
     "line": handleLine,
     "draw": handleHandDrawn,
     "hand": handleHand,
-    "select": handleSelect
+    "select": handleSelect,
+    "eraser": handleEraser,
 }
 let points: Point[] = [];
 let pointerDown = false;

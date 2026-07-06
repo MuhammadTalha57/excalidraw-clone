@@ -1,3 +1,4 @@
+import { generateId } from "@/lib/id";
 import { Line, Point } from "@/lib/types";
 import { useCanvasElementsStore } from "@/stores/useCanvasElements";
 import { usePreviewElementStore } from "@/stores/usePreviewElement";
@@ -24,6 +25,7 @@ function onPointerMove(points: Point[]) {
   // Create a Preview element for Line 
 
   const previewElement: Line = {
+    id: generateId(),
     type: "line",
     strokeWidth: useShapeOptionsStore.getState().strokeWidth,
     strokeColor: useShapeOptionsStore.getState().strokeColor,
