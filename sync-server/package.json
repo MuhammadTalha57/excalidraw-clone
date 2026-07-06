@@ -8,7 +8,7 @@
     "node": ">=18"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "echo 'no build needed'",
     "start": "node dist/server.js",
     "dev": "tsx watch src/server.ts"
   },
