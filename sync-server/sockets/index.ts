@@ -111,7 +111,7 @@ export function registerSocketHandlers(io: Server) {
       const state = activeSessions.get(currentSessionId);
       if (!state) return;
 
-      state.elements.push(element);
+      state.elements.set(element.id, element);
       socket.to(currentSessionId).emit("element-add", { element });
       scheduleSave(currentSessionId);
     });
