@@ -58,7 +58,7 @@ export default function Canvas() {
     ctx.scale(camera.zoom, camera.zoom);
     ctx.translate(-camera.offsetX, -camera.offsetY);
 
-    for (const e of canvasElements) {
+    for (const e of canvasElements.values()) {
       renderElement(ctx, e);
     }
     if (previewElement) renderElement(ctx, previewElement);

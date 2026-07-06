@@ -14,7 +14,7 @@ const setSelectedElementsOverlay =
 let dragMode: "none" | "move" | "resize" = "none";
 let dragStartPoint: Point | null = null;
 let dragHandle: HandleName | null = null;
-let selectedElements: Map<number, CanvasElement> = new Map();
+let selectedElements: Map<string, CanvasElement> = new Map();
 let selectedElementsOverlayStart: Rectangle | Line | null = null;
 
 export function handleSelect(points: Point[], e: "UP" | "DOWN" | "MOVE") {
@@ -25,15 +25,12 @@ export function handleSelect(points: Point[], e: "UP" | "DOWN" | "MOVE") {
 
 function onPointerDown(points: Point[]) {
   const point = points[0];
-  const selected = useCanvasElementsStore
-    .getState()
-    .canvasElements.map((e, i) => ({ e, i }))
-    .filter(({ e }) => e.isSelected);
+  const selected = useCanvasElementsStore.getState().canvasElements.values().filter((e) =>  e.isSelected)
+
 
   // Hit Test
   const hit = hitTest(
     point,
-    selected.map((element) => element.e),
   );
 
   if (hit.type === "none") {
@@ -44,7 +41,7 @@ function onPointerDown(points: Point[]) {
   dragMode = hit.type === "handle" ? "resize" : "move";
   dragHandle = hit.type === "handle" ? hit.handle : null;
   dragStartPoint = point;
-  selectedElements = new Map(selected.map(({ e, i }) => [i, { ...e }]));
+  for(const e of selected) selectedElements.set(e.id, e);
   selectedElementsOverlayStart = useSelectedElementsOverlayStore.getState().selectedElementsOverlay;
 }
 
@@ -52,12 +49,9 @@ function onPointerMove(points: Point[]) {
   
   if (dragMode === "none") {
     useSelectedElementsOverlayStore.getState().clearSelectedElementsOverlay();
-    const selected = useCanvasElementsStore
-      .getState()
-      .canvasElements.map((e, i) => ({ e, i }))
-      .filter(({ e }) => e.isSelected);
+    const selected = useCanvasElementsStore.getState().canvasElements.values().filter((e) =>  e.isSelected)
   
-    selectedElements = new Map(selected.map(({ e, i }) => [i, { ...e }]));
+    for(const e of selected) selectedElements.set(e.id, e);
     if (points.length < 2) return;
 
     // Create a Selection box
@@ -103,8 +97,8 @@ function onPointerMove(points: Point[]) {
 
     // Move Elements
     const updateElement = useCanvasElementsStore.getState().updateCanvasElement;
-    for (const [i, e] of selectedElements) {
-      updateElement(i, moveElement(e, dx, dy));
+    for (const [id, e] of selectedElements) {
+      updateElement(id, moveElement(e, dx, dy));
     }
 
     // Move Selection Box and update selection box
@@ -158,7 +152,7 @@ function onPointerUp(points: Point[]) {
 function markSelectedElements(selectionBox: Rectangle) {
   const canvasElements = useCanvasElementsStore.getState().canvasElements;
 
-  for (const e of canvasElements) {
+  for (const e of canvasElements.values()) {
     if (
       selectionBox.top <= e.top &&
       selectionBox.bottom >= e.bottom &&

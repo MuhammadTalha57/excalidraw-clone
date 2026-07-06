@@ -6,7 +6,6 @@ const HANDLE_HIT_RADIUS = 8;
 
 export function hitTest(
   point: Point,
-  selectedElements: CanvasElement[],
 ): SelectionHitTarget {
   const el = useSelectedElementsOverlayStore.getState().selectedElementsOverlay;
   if(el === null) return {type: "none"};
