@@ -1,5 +1,5 @@
 {
   "functions": {
-    "api/socket.ts": { "maxDuration": 800 }
+    "api/socket.ts": { "maxDuration": 300 }
   }
 }
