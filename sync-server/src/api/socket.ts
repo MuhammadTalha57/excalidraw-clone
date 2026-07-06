@@ -13,6 +13,8 @@ import { registerSocketHandlers } from "../sockets/index.js";
 
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 
+console.log("FRONEND URL", FRONTEND_URL);
+
 const app = express();
 app.use(cors({ origin: FRONTEND_URL }));
 app.use(express.json({ limit: "10mb" }));
