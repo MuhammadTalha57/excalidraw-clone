@@ -4,22 +4,13 @@ import { generateSessionId, generateHostToken } from "../utils/id.js";
 
 export const sessionRouter = Router();
 
-/**
- * POST /api/sessions
- * Called when the user clicks "Start session" in the Share modal.
- * Body: { elements: Element[], hostName: string }
- * Returns: { sessionId, hostToken }
- *
- * hostToken is only ever sent here, at creation time. The frontend must store
- * it (e.g. localStorage) and send it back when joining the socket room in
- * order to be recognized as host.
- */
+
 sessionRouter.post("/", async (req, res) => {
   try {
     const { elements, hostName } = req.body;
 
-    if (!Array.isArray(elements)) {
-      return res.status(400).json({ error: "elements must be an array" });
+     if (!elements || typeof elements !== "object" || Array.isArray(elements)) {
+      return res.status(400).json({ error: "elements must be a valid key-value object" });
     }
 
     const sessionId = generateSessionId();
@@ -40,12 +31,6 @@ sessionRouter.post("/", async (req, res) => {
   }
 });
 
-/**
- * GET /api/sessions/:id
- * Called when a browser opens a shared link directly (fresh tab, no socket yet).
- * Returns just enough to render the board before the socket connection takes over.
- * Never includes hostToken.
- */
 sessionRouter.get("/:id", async (req, res) => {
   try {
     const session = await Session.findById(req.params.id).lean();

@@ -1,19 +1,13 @@
 import { Session } from "../db/Session.js";
+import {Server, Socket} from "socket.io";
+import { CanvasElement } from "../lib/types.js";
 
 const SAVE_DEBOUNCE_MS = 1000;
 
-/**
- * In-memory cache of currently active sessions, keyed by sessionId.
- * This is the fast path for broadcasting: every element-update is applied
- * here and rebroadcast immediately. MongoDB is only touched on a debounce,
- * so a session survives a server restart / gives a late joiner real state
- * without every single stroke causing a DB write.
- *
- * Shape: { elements, hostToken, hostSocketId, saveTimer }
- */
+
 const activeSessions = new Map();
 
-async function loadSessionIntoMemory(sessionId) {
+async function loadSessionIntoMemory(sessionId: string) {
   const doc = await Session.findById(sessionId).lean();
   if (!doc) return null;
 
@@ -27,7 +21,7 @@ async function loadSessionIntoMemory(sessionId) {
   return state;
 }
 
-function scheduleSave(sessionId) {
+function scheduleSave(sessionId: string) {
   const state = activeSessions.get(sessionId);
   if (!state) return;
 
@@ -48,11 +42,11 @@ function scheduleSave(sessionId) {
   }, SAVE_DEBOUNCE_MS);
 }
 
-export function registerSocketHandlers(io) {
-  io.on("connection", (socket) => {
+export function registerSocketHandlers(io: Server) {
+  io.on("connection", (socket: Socket) => {
     // Per-connection state: which room this socket is in, and their display name.
-    let currentSessionId = null;
-    let currentName = null;
+    let currentSessionId: string | null = null;
+    let currentName: string | null = null;
 
     socket.on("join-session", async ({ sessionId, name, hostToken } = {}, ack) => {
       try {
@@ -73,10 +67,6 @@ export function registerSocketHandlers(io) {
         currentName = (typeof name === "string" && name.trim()) || "Guest";
         socket.join(sessionId);
 
-        // Only the holder of the matching hostToken (set at creation, stored
-        // client-side) is granted host privileges. This also lets the real
-        // host reclaim status after a page refresh, since hostSocketId changes
-        // on every reconnect but hostToken does not.
         const isHost = Boolean(hostToken) && hostToken === state.hostToken;
         if (isHost) {
           state.hostSocketId = socket.id;
@@ -93,14 +83,25 @@ export function registerSocketHandlers(io) {
       }
     });
 
-    socket.on("element-update", ({ elements } = {}) => {
-      if (!currentSessionId || !Array.isArray(elements)) return;
+
+    socket.on("element-update", (payload: any) => {
+      if (!currentSessionId || !payload || !payload.element || payload.id ) return;
+      const elementPatch = payload.element as Partial<CanvasElement>;
 
       const state = activeSessions.get(currentSessionId);
       if (!state) return;
 
-      state.elements = elements;
-      socket.to(currentSessionId).emit("element-update", { elements });
+      const existing = state.elements.get(payload.id);
+      if(!existing) return;
+
+      const updatedElement = {
+        ...existing,
+        ...elementPatch,
+      } as CanvasElement;
+
+      state.elements.set(payload.id, updatedElement);
+
+      socket.to(currentSessionId).emit("element-update", { id: payload.id, element: payload.element });
       scheduleSave(currentSessionId);
     });
 
