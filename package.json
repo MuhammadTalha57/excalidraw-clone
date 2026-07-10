@@ -1,0 +1,8 @@
+{
+  "private": true,
+  "workspaces": [
+    "web",
+    "sync-server",
+    "packages/shared"
+  ]
+}

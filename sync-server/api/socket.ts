@@ -21,8 +21,7 @@ const app = express();
 app.use(cors({ origin: FRONTEND_URL }));
 app.use(express.json({ limit: "10mb" }));
 
-// ── FIX 1: strip the /api/socket prefix so routes below match regardless
-// of which public path the client actually hit ──
+
 app.use((req, _res, next) => {
   if (req.url.startsWith("/api/socket")) {
     req.url = req.url.slice("/api/socket".length) || "/";
@@ -30,7 +29,6 @@ app.use((req, _res, next) => {
   next();
 });
 
-// DB-ready gate — must come BEFORE routes, not after (it was after export in your version)
 let dbReady: Promise<unknown> | null = null;
 app.use((req, res, next) => {
   if (!dbReady) dbReady = connectDB();
@@ -46,7 +44,7 @@ const pubClient = new Redis(process.env.REDIS_URL!);
 const subClient = pubClient.duplicate();
 
 const io = new Server(httpServer, {
-  path: "/api/socket/socket.io", // ── FIX 2: match client's path option ──
+  path: "/api/socket/socket.io",
   cors: { origin: FRONTEND_URL, methods: ["GET", "POST"] },
   maxHttpBufferSize: 1e7,
   adapter: createAdapter(pubClient, subClient),
