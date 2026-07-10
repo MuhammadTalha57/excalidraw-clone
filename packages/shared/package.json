@@ -3,5 +3,9 @@
   "version": "1.0.0",
   "dependencies": {
     "zod": "^4.4.3"
+  },
+  "exports": {
+    "./types": "./types.ts",
+    "./schema": "./schema.ts"
   }
 }

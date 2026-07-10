@@ -20,7 +20,8 @@
     "ioredis": "^5.11.1",
     "mongoose": "^8.5.0",
     "nanoid": "^5.0.7",
-    "socket.io": "^4.7.5"
+    "socket.io": "^4.7.5",
+    "@excalidraw/shared": "*"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",

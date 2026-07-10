@@ -1,24 +1,24 @@
 import { Router } from "express";
 import { Session } from "../db/Session.js";
 import { generateSessionId, generateHostToken } from "../utils/id.js";
+import { CanvasElementSchema } from "@excalidraw/shared/schema";
+import { CanvasElement } from "@excalidraw/shared/types";
 
 export const sessionRouter = Router();
 
 
 sessionRouter.post("/", async (req, res) => {
   try {
-    const { elements, hostName } = req.body;
+    const { elements, hostName }: {elements: CanvasElement, hostName: string} = req.body;
 
-     if (!elements || typeof elements !== "object" || Array.isArray(elements)) {
-      return res.status(400).json({ error: "elements must be a valid key-value object" });
-    }
+    const parsedElements = CanvasElementSchema.parse(elements);
 
     const sessionId = generateSessionId();
     const hostToken = generateHostToken();
 
     await Session.create({
       _id: sessionId,
-      elements,
+      parsedElements,
       hostToken,
       hostName: typeof hostName === "string" && hostName.trim() ? hostName.trim() : "Host",
       updatedAt: new Date(),
