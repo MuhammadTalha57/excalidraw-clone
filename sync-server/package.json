@@ -10,7 +10,7 @@
   "scripts": {
     "build": "echo 'no build needed'",
     "start": "node dist/server.js",
-    "dev": "tsx watch src/server.ts"
+    "dev": "tsx watch server.ts"
   },
   "dependencies": {
     "@socket.io/redis-adapter": "^8.3.0",

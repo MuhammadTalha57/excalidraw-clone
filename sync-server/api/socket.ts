@@ -1,4 +1,3 @@
-// api/socket.ts
 import "dotenv/config";
 import http from "node:http";
 import express from "express";
@@ -11,7 +10,12 @@ import { connectDB } from "../db/connect.js";
 import { sessionRouter } from "../routes/session.js";
 import { registerSocketHandlers } from "../sockets/index.js";
 
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+// Workaround for node js V24 dns issue.
+import dns from 'node:dns';
+dns.setServers(['8.8.8.8', '1.1.1.1']);
+
+
+const FRONTEND_URL = process.env.FRONTEND_URL;
 
 const app = express();
 app.use(cors({ origin: FRONTEND_URL }));
