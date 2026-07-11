@@ -10,3 +10,7 @@ export function connectDB() {
   }
   return global._mongooseConn;
 }
+
+export function getClient() {
+  return global._mongooseConn ? global._mongooseConn : connectDB();
+}

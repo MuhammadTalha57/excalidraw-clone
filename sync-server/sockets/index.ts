@@ -1,9 +1,9 @@
 import { Session } from "../db/Session.js";
 import {Server, Socket} from "socket.io";
-import { CanvasElement } from "../lib/types.js";
+import { CanvasElement } from "@excalidraw/shared/types"
+import {getActiveSession} from "../services/session.service.js"
 
 const SAVE_DEBOUNCE_MS = 1000;
-
 
 const activeSessions = new Map();
 
@@ -13,8 +13,7 @@ async function loadSessionIntoMemory(sessionId: string) {
 
   const state = {
     elements: doc.elements,
-    hostToken: doc.hostToken,
-    hostSocketId: doc.hostSocketId,
+    hostToken: doc.hostToken, 
     saveTimer: null,
   };
   activeSessions.set(sessionId, state);
@@ -44,7 +43,6 @@ function scheduleSave(sessionId: string) {
 
 export function registerSocketHandlers(io: Server) {
   io.on("connection", (socket: Socket) => {
-    // Per-connection state: which room this socket is in, and their display name.
     let currentSessionId: string | null = null;
     let currentName: string | null = null;
 
@@ -54,10 +52,7 @@ export function registerSocketHandlers(io: Server) {
           return ack?.({ error: "sessionId is required" });
         }
 
-        let state = activeSessions.get(sessionId);
-        if (!state) {
-          state = await loadSessionIntoMemory(sessionId);
-        }
+        let state = await getActiveSession(sessionId);
 
         if (!state) {
           return ack?.({ error: "Session not found or has expired" });

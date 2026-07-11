@@ -21,7 +21,6 @@ sessionRouter.post("/", async (req, res) => {
       parsedElements,
       hostToken,
       hostName: typeof hostName === "string" && hostName.trim() ? hostName.trim() : "Host",
-      updatedAt: new Date(),
     });
 
     res.status(201).json({ sessionId, hostToken });

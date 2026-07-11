@@ -58,3 +58,18 @@ export const CanvasElementSchema = z.discriminatedUnion("type", [
   ArrowSchema,
   HandDrawnSchema,
 ]);
+
+export const SessionSchema = z.object({
+  _id: z.string(),
+  
+  elements: z.map(z.string(), CanvasElementSchema),
+  
+  hostToken: z.string(),
+  
+  hostName: z.string().default("Host"), 
+
+  hostSocketId: z.string().nullable(),
+
+  active: z.boolean(),
+});
+

@@ -17,12 +17,12 @@ const sessionSchema = new mongoose.Schema({
 
   hostName: { type: String, default: "Host" },
 
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: {
-    type: Date,
-    default: Date.now,
-    expires: TTL_SECONDS,
-  },
+  // createdAt: { type: Date, default: Date.now },
+  // updatedAt: {
+  //   type: Date,
+  //   default: Date.now,
+  //   expires: TTL_SECONDS,
+  // },
 });
 
 export const Session = mongoose.model("Session", sessionSchema);
