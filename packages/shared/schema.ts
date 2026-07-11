@@ -94,6 +94,7 @@ export const SessionMetaSchema = z.object({
   active: z.boolean(),
 });
 
+export const SessionMetaSchemaPartial = SessionMetaSchema.partial();
 
 
 

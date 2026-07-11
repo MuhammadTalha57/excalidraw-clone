@@ -1,7 +1,9 @@
 import { Session } from "../db/Session.js";
 import {Server, Socket} from "socket.io";
 import { CanvasElement, PartialCanvasElement } from "@excalidraw/shared/types"
-import {getActiveSession, updateSession} from "../services/session.service.js"
+import {getActiveSession, updateElement, updateSession, updateSessionMeta} from "../services/session.service.js"
+import { CanvasElementSchema, PartialCanvasElementSchema } from "@excalidraw/shared/schema";
+
 
 const SAVE_DEBOUNCE_MS = 1000;
 
@@ -93,12 +95,15 @@ export function registerSocketHandlers(io: Server) {
       const existing = state.elements.get(id);
       if(!existing) return;
 
+      patch = PartialCanvasElementSchema.parse(patch);
+
       const updatedElement = {
         ...existing,
         ...patch,
       } as CanvasElement;
 
-      state.elements.set(id, updatedElement);
+      // state.elements.set(id, updatedElement);
+      updateElement(currentSessionId, updatedElement);
 
       socket.to(currentSessionId).emit("element-update", { id, patch });
       scheduleSave(currentSessionId);
@@ -107,26 +112,28 @@ export function registerSocketHandlers(io: Server) {
     socket.on("element-add", ({ element } = {}) => {
       if (!currentSessionId) return;
 
-      const state = activeSessions.get(currentSessionId);
+      const state = getActiveSession(currentSessionId);
       if (!state) return;
 
-      state.elements.set(element.id, element);
+      element = CanvasElementSchema.parse(element);
+
+      updateElement(currentSessionId, element)
       socket.to(currentSessionId).emit("element-add", { element });
       scheduleSave(currentSessionId);
     });
 
-    socket.on("cursor-move", (payload = {}) => {
-      if (!currentSessionId) return;
-      socket.to(currentSessionId).emit("cursor-move", {
-        ...payload,
-        socketId: socket.id,
-        name: currentName,
-      });
-    });
+    // socket.on("cursor-move", (payload = {}) => {
+    //   if (!currentSessionId) return;
+    //   socket.to(currentSessionId).emit("cursor-move", {
+    //     ...payload,
+    //     socketId: socket.id,
+    //     name: currentName,
+    //   });
+    // });
 
     socket.on("end-session", async ({ sessionId } = {}, ack) => {
       try {
-        const state = activeSessions.get(sessionId);
+        const state = await getActiveSession(sessionId);
 
         if (!state) {
           return ack?.({ error: "Session not found" });
@@ -135,11 +142,12 @@ export function registerSocketHandlers(io: Server) {
           return ack?.({ error: "Only the host can end the session" });
         }
 
-        if (state.saveTimer) clearTimeout(state.saveTimer);
+        // if (state.saveTimer) clearTimeout(state.saveTimer);
 
         io.to(sessionId).emit("session-ended");
-        activeSessions.delete(sessionId);
-        await Session.findByIdAndDelete(sessionId);
+        updateSessionMeta(sessionId, {_id:state._id, hostToken: state.hostToken, hostName: state.hostName, hostSocketId: state.hostSocketId, active: false});
+        
+        // await Session.findByIdAndDelete(sessionId);
 
         ack?.({ ok: true });
       } catch (err) {

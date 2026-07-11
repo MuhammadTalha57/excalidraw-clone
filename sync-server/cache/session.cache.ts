@@ -1,6 +1,6 @@
 import { SessionSchema, SessionMetaSchema, CanvasElementSchema } from "@excalidraw/shared/schema";
 import { getClient } from "./connect.js";
-import { CanvasElement, SessionType } from "@excalidraw/shared/types";
+import { CanvasElement, SessionMetaType, SessionType } from "@excalidraw/shared/types";
 
 export async function getActiveSession(
     sessionId: string,
@@ -35,6 +35,36 @@ export async function getActiveSession(
         return null;
     }
 }
+
+export async function updateElement(
+    sessionId: string,
+    updatedElement: CanvasElement
+): Promise<void> {
+    try {
+        const redisClient = getClient();
+        await redisClient.hset(`session:${sessionId}:elements`, updatedElement.id, JSON.stringify(updatedElement));
+
+    } catch (error) {
+        console.error(error);
+        return;
+    }
+}
+
+export async function updateSessionMeta(
+    sessionId: string,
+    updatedSessionMeta: SessionMetaType,
+): Promise<void> {
+    try {
+        const redisClient = getClient();
+
+        redisClient.set(`session:${sessionId}:meta`, JSON.stringify(updatedSessionMeta));
+    } catch (error) {
+        console.error(error);
+        return;
+    }
+}
+
+
 
 export async function updateSesion(
     sessionId: string,
