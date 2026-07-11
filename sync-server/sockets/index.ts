@@ -1,7 +1,7 @@
 import { Session } from "../db/Session.js";
 import {Server, Socket} from "socket.io";
-import { CanvasElement } from "@excalidraw/shared/types"
-import {getActiveSession} from "../services/session.service.js"
+import { CanvasElement, PartialCanvasElement } from "@excalidraw/shared/types"
+import {getActiveSession, updateSession} from "../services/session.service.js"
 
 const SAVE_DEBOUNCE_MS = 1000;
 
@@ -65,9 +65,14 @@ export function registerSocketHandlers(io: Server) {
         const isHost = Boolean(hostToken) && hostToken === state.hostToken;
         if (isHost) {
           state.hostSocketId = socket.id;
-          Session.findByIdAndUpdate(sessionId, { hostSocketId: socket.id }).catch((err) =>
-            console.error("[join-session] failed to persist hostSocketId:", err)
-          );
+          
+          const updatedSession = await updateSession(sessionId, {hostSocketId: socket.id});
+          if(!updatedSession) {
+            console.error("[join-session] failed to persist hostSocketId");
+          }
+          // Session.findByIdAndUpdate(sessionId, { hostSocketId: socket.id }).catch((err) =>
+          //   console.error("[join-session] failed to persist hostSocketId:", err)
+          // );
         }
 
         ack?.({ elements: state.elements, isHost });
@@ -79,24 +84,23 @@ export function registerSocketHandlers(io: Server) {
     });
 
 
-    socket.on("element-update", (payload: any) => {
-      if (!currentSessionId || !payload || !payload.element || payload.id ) return;
-      const elementPatch = payload.element as Partial<CanvasElement>;
+    socket.on("element-update", async (id: string, patch: PartialCanvasElement) => {
+      if (!currentSessionId) return;
 
-      const state = activeSessions.get(currentSessionId);
+      const state = await getActiveSession(currentSessionId);
       if (!state) return;
 
-      const existing = state.elements.get(payload.id);
+      const existing = state.elements.get(id);
       if(!existing) return;
 
       const updatedElement = {
         ...existing,
-        ...elementPatch,
+        ...patch,
       } as CanvasElement;
 
-      state.elements.set(payload.id, updatedElement);
+      state.elements.set(id, updatedElement);
 
-      socket.to(currentSessionId).emit("element-update", { id: payload.id, element: payload.element });
+      socket.to(currentSessionId).emit("element-update", { id, patch });
       scheduleSave(currentSessionId);
     });
 

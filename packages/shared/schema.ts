@@ -59,6 +59,15 @@ export const CanvasElementSchema = z.discriminatedUnion("type", [
   HandDrawnSchema,
 ]);
 
+export const PartialCanvasElementSchema = z.discriminatedUnion("type", [
+  RectangleSchema.partial({ strokeWidth: true, strokeColor: true, top: true, bottom: true, left: true, right: true, isSelected: true, id: true, fillColor: true, x: true, y: true, width: true, height: true }),
+  DiamondSchema.partial({ strokeWidth: true, strokeColor: true, top: true, bottom: true, left: true, right: true, isSelected: true, id: true, fillColor: true, x: true, y: true, width: true, height: true }),
+  EllipseSchema.partial({ strokeWidth: true, strokeColor: true, top: true, bottom: true, left: true, right: true, isSelected: true, id: true, fillColor: true, x: true, y: true, width: true, height: true }),
+  LineSchema.partial({ strokeWidth: true, strokeColor: true, top: true, bottom: true, left: true, right: true, isSelected: true, id: true, p1: true, p2: true }),
+  ArrowSchema.partial({ strokeWidth: true, strokeColor: true, top: true, bottom: true, left: true, right: true, isSelected: true, id: true, p1: true, p2: true }),
+  HandDrawnSchema.partial({ strokeWidth: true, strokeColor: true, top: true, bottom: true, left: true, right: true, isSelected: true, id: true, points: true }),
+]);
+
 export const SessionSchema = z.object({
   _id: z.string(),
   
@@ -72,4 +81,19 @@ export const SessionSchema = z.object({
 
   active: z.boolean(),
 });
+
+export const SessionMetaSchema = z.object({
+  _id: z.string(),
+  
+  hostToken: z.string(),
+  
+  hostName: z.string().default("Host"), 
+
+  hostSocketId: z.string().nullable(),
+
+  active: z.boolean(),
+});
+
+
+
 
