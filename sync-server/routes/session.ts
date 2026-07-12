@@ -8,6 +8,7 @@ import {
 import { CanvasElements, SessionType } from "@excalidraw/shared/types";
 import { logger } from "../utils/logger.js";
 import { getActiveSession } from "../services/session.service.js";
+import { writeFullSessionToCache } from "../cache/session.cache.js";
 
 export const sessionRouter = Router();
 
@@ -35,6 +36,8 @@ sessionRouter.post("/", async (req, res) => {
         await Session.create({
             ...session,
         });
+
+        await writeFullSessionToCache(session);
 
         logger.info(`${hostName} created new session`);
         res.status(201).json({ sessionId, hostToken });

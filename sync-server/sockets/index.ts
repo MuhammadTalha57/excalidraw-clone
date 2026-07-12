@@ -5,6 +5,7 @@ import {
     getActiveSession,
     updateElement,
     updateSessionMeta,
+    flushSessionToDB,
 } from "../services/session.service.js";
 import {
     CanvasElementSchema,
@@ -189,13 +190,19 @@ export function registerSocketHandlers(io: Server) {
                 }
 
                 io.to(sessionId).emit("session-ended");
-                updateSessionMeta(sessionId, {
+
+                await updateSessionMeta(sessionId, {
                     _id: state._id,
                     hostToken: state.hostToken,
                     hostName: state.hostName,
                     hostSocketId: state.hostSocketId,
                     active: false,
                 });
+
+                // Force an immediate, synchronous persist rather than waiting for
+                // the next scheduled flush — we don't want the final board state
+                // (or the active:false flag) resting only on a 24h Redis TTL.
+                await flushSessionToDB(sessionId);
 
                 logger.info(`Session Ended: ${currentSessionId}`);
 

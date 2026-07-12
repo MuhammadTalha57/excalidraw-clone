@@ -1,11 +1,15 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "functions": {
-    "api/socket.ts": { "maxDuration": 300   }
+    "api/socket.ts": { "maxDuration": 300 }
   },
   "rewrites": [
     { "source": "/api/socket/(.*)", "destination": "/api/socket" },
     { "source": "/api/sessions", "destination": "/api/socket" },
-    { "source": "/api/sessions/(.*)", "destination": "/api/socket" }
+    { "source": "/api/sessions/(.*)", "destination": "/api/socket" },
+    { "source": "/api/cron/flush-sessions", "destination": "/api/socket" }
+  ],
+  "crons": [
+    { "path": "/api/cron/flush-sessions", "schedule": "0 0 * * *" }
   ]
 }

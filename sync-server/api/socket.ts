@@ -11,6 +11,7 @@ import { sessionRouter } from "../routes/session.js";
 import { registerSocketHandlers } from "../sockets/index.js";
 import morgan from "morgan";
 import { logger } from "../utils/logger.js";
+import { flushAllDirtySessions } from "../services/session.service.js";
 
 // Workaround for node js V24 dns issue.
 import dns from "node:dns";
@@ -38,6 +39,22 @@ app.use((req, res, next) => {
 
 app.get("/health", (_req, res) => res.json({ ok: true }));
 app.use("/api/sessions", sessionRouter);
+app.get("/api/cron/flush-sessions", async (req, res) => {
+    const cronSecret = process.env.CRON_SECRET;
+    if (cronSecret && req.headers.authorization !== `Bearer ${cronSecret}`) {
+        return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    try {
+        const result = await flushAllDirtySessions();
+        logger.info(`[cron flush-sessions] ${JSON.stringify(result)}`);
+        res.json({ ok: true, ...result });
+    } catch (error) {
+        logger.error(`[cron flush-sessions] error: ${error}`);
+        res.status(500).json({ ok: false, error: "Flush failed" });
+    }
+});
+
 
 const httpServer = http.createServer(app);
 
