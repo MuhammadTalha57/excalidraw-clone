@@ -5,6 +5,7 @@ import { CanvasElementSchema, CanvasElementsSchema } from "@excalidraw/shared/sc
 import { CanvasElement, CanvasElements, SessionType } from "@excalidraw/shared/types";
 import { parse } from "path";
 import {logger} from "../utils/logger.js"
+import { getActiveSession } from "../services/session.service.js";
 
 export const sessionRouter = Router();
 
@@ -41,7 +42,7 @@ sessionRouter.post("/", async (req, res) => {
 
 sessionRouter.get("/:id", async (req, res) => {
   try {
-    const session = await Session.findById(req.params.id).lean();
+    const session = await getActiveSession(req.params.id);
 
     if (!session) {
       return res.status(404).json({ error: "Session not found or expired" });
