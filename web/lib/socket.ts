@@ -59,10 +59,10 @@ function bindSocketListeners() {
 
     currentSocket.on("element-update", ({ id, patch, senderId }: { id: string, patch: Partial<CanvasElement>, senderId: any }) => {
         console.log("Received Element Update");
-        if (senderId === currentSocket.id) {
-        console.log("Ignored self-echo packet");
-        return; 
-    }
+    //     if (senderId === currentSocket.id) {
+    //     console.log("Ignored self-echo packet");
+    //     return; 
+    // }
         updateCanvasElement(id, patch, false);
     });
 

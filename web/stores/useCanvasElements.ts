@@ -37,9 +37,10 @@ export const useCanvasElementsStore = create<CanvasElementsStore>((set) => ({
             const existing = state.canvasElements[id];
             const updated = { ...existing, ...patch } as CanvasElement;
             newElements[id] = updated;
-            if (broadcast)
+            if (broadcast) {
               console.log("BROADCASTING ELEMENT UPDATE");
                 getSocket().emit("element-update", { id: id, patch: patch, senderId: getSocket().id });
+            }
 
             return {
                 canvasElements: newElements,
