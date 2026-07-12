@@ -1,4 +1,5 @@
-import {Redis} from "ioredis";
+import { Redis } from "ioredis";
+import { logger } from "../utils/logger.js";
 
 declare global {
     var _redisConn: Redis | undefined;
@@ -10,11 +11,11 @@ function connectRedis() {
     }
 
     global._redisConn.on("connect", () => {
-        console.log("Redis connected");
+        logger.info("Redis Connected");
     });
 
     global._redisConn.on("error", (err) => {
-        console.error(err);
+        logger.error(`Redis Connection Failed: ${err}`);
     });
 
     return global._redisConn;

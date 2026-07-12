@@ -1,6 +1,16 @@
-import { SessionSchema, SessionMetaSchema, CanvasElementSchema, CanvasBaseElementSchema } from "@excalidraw/shared/schema";
+import {
+    SessionSchema,
+    SessionMetaSchema,
+    CanvasElementSchema,
+} from "@excalidraw/shared/schema";
 import { getClient } from "./connect.js";
-import { CanvasElement, CanvasElements, SessionMetaType, SessionType } from "@excalidraw/shared/types";
+import {
+    CanvasElement,
+    CanvasElements,
+    SessionMetaType,
+    SessionType,
+} from "@excalidraw/shared/types";
+import { logger } from "../utils/logger.js";
 
 export async function getActiveSession(
     sessionId: string,
@@ -12,41 +22,51 @@ export async function getActiveSession(
         if (!sessionMeta) return null;
 
         sessionMeta = JSON.parse(sessionMeta);
-        // console.log("JSON META", sessionMeta);
         const parsedSessionMeta = SessionMetaSchema.parse(sessionMeta);
 
         if (!parsedSessionMeta.active) return null;
-        
-        let rawSessionElements = await redisClient.hgetall(`session:${sessionId}:elements`);
+
+        let rawSessionElements = await redisClient.hgetall(
+            `session:${sessionId}:elements`,
+        );
         let sessionElements: CanvasElements = {};
-        for(const [id, json] of Object.entries(rawSessionElements)) {
+        for (const [id, json] of Object.entries(rawSessionElements)) {
             sessionElements[id] = CanvasElementSchema.parse(JSON.parse(json));
         }
 
         const session = {
-            ...parsedSessionMeta, 
+            ...parsedSessionMeta,
             elements: sessionElements,
         };
 
-        return session;
+        logger.info(`Retrieved Session:${sessionId} From Redis`);
 
+        return session;
     } catch (error) {
-        
-        console.error(error);
+        logger.error(`Error Getting Session From Redis: ${sessionId}`);
         return null;
     }
 }
 
 export async function updateElement(
     sessionId: string,
-    updatedElement: CanvasElement
+    updatedElement: CanvasElement,
 ): Promise<void> {
     try {
         const redisClient = getClient();
-        await redisClient.hset(`session:${sessionId}:elements`, updatedElement.id, JSON.stringify(updatedElement));
+        await redisClient.hset(
+            `session:${sessionId}:elements`,
+            updatedElement.id,
+            JSON.stringify(updatedElement),
+        );
 
+        logger.info(
+            `Updated Element From Redis: ${sessionId} - ${updatedElement}`,
+        );
     } catch (error) {
-        console.error(error);
+        logger.error(
+            `Error Updating Element From Redis: ${sessionId} - ${updatedElement}`,
+        );
         return;
     }
 }
@@ -58,38 +78,45 @@ export async function updateSessionMeta(
     try {
         const redisClient = getClient();
 
-        redisClient.set(`session:${sessionId}:meta`, JSON.stringify(updatedSessionMeta));
+        redisClient.set(
+            `session:${sessionId}:meta`,
+            JSON.stringify(updatedSessionMeta),
+        );
+
+        logger.info(
+            `Updated Session Meta From Redis: ${sessionId} - ${updatedSessionMeta}`,
+        );
     } catch (error) {
-        console.error(error);
+        logger.error(
+            `Error Updating Session Meta From Redis: ${sessionId} - ${updatedSessionMeta}`,
+        );
         return;
     }
 }
 
+// export async function updateSesion(
+//     sessionId: string,
+//     patch: Partial<SessionType>,
+// ): Promise<SessionType | null> {
+//     try {
+//         const redisClient = getClient();
 
+//         let session = await redisClient.get(`session:${sessionId}`);
+//         if (!session) return null;
 
-export async function updateSesion(
-    sessionId: string,
-    patch: Partial<SessionType>,
-): Promise<SessionType | null> {
-    try {
-        const redisClient = getClient();
+//         session = JSON.parse(session);
+//         const parsedSession = SessionSchema.parse(session);
 
-        let session = await redisClient.get(`session:${sessionId}`);
-        if (!session) return null;
+//         const updatedSession = {
+//             ...parsedSession,
+//             ...patch,
+//         };
 
-        session = JSON.parse(session);
-        const parsedSession = SessionSchema.parse(session);
+//         redisClient.set(`session:${sessionId}`, JSON.stringify(updatedSession));
 
-        const updatedSession = {
-            ...parsedSession,
-            ...patch,
-        };
-
-        redisClient.set(`session:${sessionId}`, JSON.stringify(updatedSession));
-
-        return updatedSession;
-    } catch (error) {
-        console.error(error);
-        return null;
-    }
-}
+//         return updatedSession;
+//     } catch (error) {
+//         console.error(error);
+//         return null;
+//     }
+// }

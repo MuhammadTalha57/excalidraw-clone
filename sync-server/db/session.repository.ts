@@ -1,6 +1,7 @@
 import { SessionSchema } from "@excalidraw/shared/schema";
 import { SessionType } from "@excalidraw/shared/types";
 import { Session } from "./Session.js";
+import { logger } from "../utils/logger.js";
 
 export async function getActiveSession(
     sessionId: string,
@@ -9,12 +10,15 @@ export async function getActiveSession(
         let session = await Session.findById(sessionId).lean();
         if (!session) return null;
 
-        console.log("Got this", session);
         const parsedSession = SessionSchema.parse(session);
+
+        logger.info(`Get Active Session From DB: ${sessionId}`);
         if (parsedSession.active) return parsedSession;
         else return null;
     } catch (error) {
-        console.error(error);
+        logger.error(
+            `Error Getting Active Session From DB: ${sessionId} - ${error}`,
+        );
         return null;
     }
 }
