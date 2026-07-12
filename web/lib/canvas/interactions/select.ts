@@ -6,6 +6,7 @@ import { CanvasElement, HandleName, Line, Point, Rectangle } from "@/lib/types";
 import { hitTest } from "@/lib/selectionHitTest";
 import { useSelectedElementsOverlayStore } from "@/stores/useSelectedElementsBox";
 import { generateId } from "@/lib/id";
+import { CanvasElements } from "@excalidraw/shared/types";
 
 const setSelectionBox = useSelectionBoxStore.getState().setSelectionBox;
 const setSelectedElementsOverlay =
@@ -14,7 +15,7 @@ const setSelectedElementsOverlay =
 let dragMode: "none" | "move" | "resize" = "none";
 let dragStartPoint: Point | null = null;
 let dragHandle: HandleName | null = null;
-let selectedElements: Map<string, CanvasElement> = new Map();
+let selectedElements: CanvasElements = {};
 let selectedElementsOverlayStart: Rectangle | Line | null = null;
 
 export function handleSelect(points: Point[], e: "UP" | "DOWN" | "MOVE") {
@@ -25,7 +26,7 @@ export function handleSelect(points: Point[], e: "UP" | "DOWN" | "MOVE") {
 
 function onPointerDown(points: Point[]) {
   const point = points[0];
-  const selected = useCanvasElementsStore.getState().canvasElements.values().filter((e) =>  e.isSelected)
+  const selected = Object.values(useCanvasElementsStore.getState().canvasElements).filter((e) =>  e.isSelected)
 
 
   // Hit Test
@@ -41,7 +42,7 @@ function onPointerDown(points: Point[]) {
   dragMode = hit.type === "handle" ? "resize" : "move";
   dragHandle = hit.type === "handle" ? hit.handle : null;
   dragStartPoint = point;
-  for(const e of selected) selectedElements.set(e.id, e);
+  for(const e of selected) selectedElements[e.id] = e;
   selectedElementsOverlayStart = useSelectedElementsOverlayStore.getState().selectedElementsOverlay;
 }
 
@@ -49,9 +50,9 @@ function onPointerMove(points: Point[]) {
   
   if (dragMode === "none") {
     useSelectedElementsOverlayStore.getState().clearSelectedElementsOverlay();
-    const selected = useCanvasElementsStore.getState().canvasElements.values().filter((e) =>  e.isSelected)
+    const selected = Object.values(useCanvasElementsStore.getState().canvasElements).filter((e) =>  e.isSelected)
   
-    for(const e of selected) selectedElements.set(e.id, e);
+    for(const e of selected) selectedElements[e.id] = e;
     if (points.length < 2) return;
 
     // Create a Selection box
@@ -97,7 +98,7 @@ function onPointerMove(points: Point[]) {
 
     // Move Elements
     const updateElement = useCanvasElementsStore.getState().updateCanvasElement;
-    for (const [id, e] of selectedElements) {
+    for (const [id, e] of Object.entries(selectedElements)) {
       updateElement(id, moveElement(e, dx, dy));
     }
 
@@ -138,7 +139,7 @@ function onPointerUp(points: Point[]) {
     setSelectionBox(null);
 
     // Create Selected Elements Overlay
-    if (selectedElements.size > 0) {
+    if (Object.keys(selectedElements).length > 0) {
       createSelectedElementsOverlay();
     }
   }
@@ -146,13 +147,14 @@ function onPointerUp(points: Point[]) {
 
   dragMode = "none";
   dragStartPoint = null;
-  selectedElements.clear();
+  selectedElements = {};
+  // selectedElements.clear();
 }
 
 function markSelectedElements(selectionBox: Rectangle) {
   const canvasElements = useCanvasElementsStore.getState().canvasElements;
 
-  for (const e of canvasElements.values()) {
+  for (const e of Object.values(canvasElements)) {
     if (
       selectionBox.top <= e.top &&
       selectionBox.bottom >= e.bottom &&
@@ -166,8 +168,8 @@ function markSelectedElements(selectionBox: Rectangle) {
 
 function createSelectedElementsOverlay() {
   let selectedElementsOverlay: Rectangle | Line | null = null;
-  if (selectedElements.size === 1) {
-    const e = selectedElements.values().toArray()[0];
+  if (Object.keys(selectedElements).length === 1) {
+    const e = Object.values(selectedElements)[0];
 
     if (e.type === "line" || e.type === "arrow") {
       // Create selected elements overlay
@@ -195,7 +197,7 @@ function createSelectedElementsOverlay() {
   }
 
   // Calculate bounds
-  let temp = selectedElements.values().reduce(
+  let temp = Object.values(selectedElements).reduce(
     (acc, e) => ({
       top: Math.min(acc.top, e.top),
       bottom: Math.max(acc.bottom, e.bottom),

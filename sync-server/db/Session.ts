@@ -16,6 +16,8 @@ const sessionSchema = new mongoose.Schema({
   hostSocketId: { type: String, default: null },
 
   hostName: { type: String, default: "Host" },
+  
+  active: {type: Boolean, default: true},
 
   // createdAt: { type: Date, default: Date.now },
   // updatedAt: {

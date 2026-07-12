@@ -3,6 +3,7 @@ import {Server, Socket} from "socket.io";
 import { CanvasElement, PartialCanvasElement } from "@excalidraw/shared/types"
 import {getActiveSession, updateElement, updateSession, updateSessionMeta} from "../services/session.service.js"
 import { CanvasElementSchema, PartialCanvasElementSchema } from "@excalidraw/shared/schema";
+import {logger} from "../utils/logger.js"
 
 
 const SAVE_DEBOUNCE_MS = 1000;
@@ -38,7 +39,7 @@ function scheduleSave(sessionId: string) {
         updatedAt: new Date(),
       });
     } catch (err) {
-      console.error(`[sockets] failed to persist session ${sessionId}:`, err);
+      logger.error(`[sockets] failed to persist session ${sessionId}:`, err);
     }
   }, SAVE_DEBOUNCE_MS);
 }
@@ -68,32 +69,34 @@ export function registerSocketHandlers(io: Server) {
         if (isHost) {
           state.hostSocketId = socket.id;
           
-          const updatedSession = await updateSession(sessionId, {hostSocketId: socket.id});
-          if(!updatedSession) {
-            console.error("[join-session] failed to persist hostSocketId");
-          }
+          // const updatedSession = await updateSession(sessionId, {hostSocketId: socket.id});
+          await updateSessionMeta(sessionId, {_id: state._id, hostToken: state.hostToken, hostName: state.hostName, active: state.active, hostSocketId: state.hostSocketId});
+
           // Session.findByIdAndUpdate(sessionId, { hostSocketId: socket.id }).catch((err) =>
-          //   console.error("[join-session] failed to persist hostSocketId:", err)
+          //   logger.error("[join-session] failed to persist hostSocketId:", err)
           // );
         }
 
         ack?.({ elements: state.elements, isHost });
         socket.to(sessionId).emit("peer-joined", { name: currentName });
       } catch (err) {
-        console.error("[socket join-session] error:", err);
+        logger.error("[socket join-session] error:", err);
         ack?.({ error: "Failed to join session" });
       }
     });
 
 
-    socket.on("element-update", async (id: string, patch: PartialCanvasElement) => {
+    socket.on("element-update", async ({id, patch} :{id: string, patch: PartialCanvasElement}) => {
+      logger.info("RECEIVED ELEMENT UPDATE:", currentName);
+      patch = PartialCanvasElementSchema.parse(patch);
       if (!currentSessionId) return;
 
       const state = await getActiveSession(currentSessionId);
       if (!state) return;
 
-      const existing = state.elements.get(id);
+      const existing = state.elements[id];
       if(!existing) return;
+
 
       patch = PartialCanvasElementSchema.parse(patch);
 
@@ -151,7 +154,7 @@ export function registerSocketHandlers(io: Server) {
 
         ack?.({ ok: true });
       } catch (err) {
-        console.error("[socket end-session] error:", err);
+        logger.error("[socket end-session] error:", err);
         ack?.({ error: "Failed to end session" });
       }
     });

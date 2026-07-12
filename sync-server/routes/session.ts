@@ -1,26 +1,33 @@
 import { Router } from "express";
 import { Session } from "../db/Session.js";
 import { generateSessionId, generateHostToken } from "../utils/id.js";
-import { CanvasElementSchema } from "@excalidraw/shared/schema";
-import { CanvasElement } from "@excalidraw/shared/types";
+import { CanvasElementSchema, CanvasElementsSchema } from "@excalidraw/shared/schema";
+import { CanvasElement, CanvasElements, SessionType } from "@excalidraw/shared/types";
+import { parse } from "path";
 
 export const sessionRouter = Router();
 
 
 sessionRouter.post("/", async (req, res) => {
   try {
-    const { elements, hostName }: {elements: CanvasElement, hostName: string} = req.body;
+    const { elements, hostName }: {elements: CanvasElements, hostName: string} = req.body;
 
-    const parsedElements = CanvasElementSchema.parse(elements);
+    const parsedElements = CanvasElementsSchema.parse(elements);
 
     const sessionId = generateSessionId();
     const hostToken = generateHostToken();
 
-    await Session.create({
+    const session: SessionType = {
       _id: sessionId,
-      parsedElements,
-      hostToken,
-      hostName: typeof hostName === "string" && hostName.trim() ? hostName.trim() : "Host",
+      elements: parsedElements,
+      hostName: hostName,
+      hostToken: hostToken,
+      hostSocketId: null,
+      active: true,
+    }
+
+    await Session.create({
+      ...session
     });
 
     res.status(201).json({ sessionId, hostToken });
@@ -39,9 +46,7 @@ sessionRouter.get("/:id", async (req, res) => {
     }
 
     res.json({
-      sessionId: session._id,
-      elements: session.elements,
-      hostName: session.hostName,
+      session
     });
   } catch (err) {
     console.error("[GET /api/sessions/:id] error:", err);

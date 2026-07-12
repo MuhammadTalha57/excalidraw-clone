@@ -9,6 +9,7 @@ export async function getActiveSession(
         let session = await Session.findById(sessionId).lean();
         if (!session) return null;
 
+        console.log("Got this", session);
         const parsedSession = SessionSchema.parse(session);
         if (parsedSession.active) return parsedSession;
         else return null;

@@ -1,11 +1,12 @@
 import { io, Socket } from "socket.io-client";
 
-import { CanvasElement } from "./types";
+import { CanvasElement } from "@excalidraw/shared/types";
 import { useCanvasElementsStore } from "@/stores/useCanvasElements";
 import { useSessionStore } from "@/stores/useSessionStore";
+import {CanvasElements} from "@excalidraw/shared/types"
 
 type JoinAck = {
-    elements?: Map<string, CanvasElement>;
+    elements?: CanvasElements;
     isHost?: boolean;
     error?: string;
 };
@@ -56,13 +57,13 @@ function bindSocketListeners() {
 
     const currentSocket = getSocket();
 
-    currentSocket.on("element-update", ({ id, element }: { id: string, element: Partial<CanvasElement> }) => {
-        updateCanvasElement(id, element);
+    currentSocket.on("element-update", ({ id, patch }: { id: string, patch: Partial<CanvasElement> }) => {
+        updateCanvasElement(id, patch, false);
     });
 
     currentSocket.on("element-add", ({ element }: { element?: CanvasElement }) => {
         if (element) {
-            addCanvasElement(element);
+            addCanvasElement(element, false);
         }
     });
 
@@ -75,12 +76,13 @@ function bindSocketListeners() {
     socketListenersBound = true;
 }
 
-function storeLocalBoard(elements: Map<string, CanvasElement>) {
+function storeLocalBoard(elements: CanvasElements) {
     localStorage.setItem("local-board", JSON.stringify(elements));
 }
 
 function restoreLocalBoard() {
-    const local = JSON.parse(localStorage.getItem("local-board") || "[]");
+    const local: Record<string, CanvasElement> = JSON.parse(localStorage.getItem("local-board") ?? "{}");
+
     setCanvasElements(local);
 }
 
@@ -100,7 +102,7 @@ function emitJoinSession(
     });
 }
 
-export async function startSession(elements: Map<string, CanvasElement>, name: string) {
+export async function startSession(elements: CanvasElements, name: string) {
     setSessionError(null);
     setSessionPending(true);
     storeLocalBoard(elements);
@@ -109,7 +111,7 @@ export async function startSession(elements: Map<string, CanvasElement>, name: s
         const response = await fetch(`${getSyncServerUrl()}/api/sessions`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ elements, hostName: name }),
+            body: JSON.stringify({ elements:elements, hostName: name }),
         });
 
         const payload: CreateSessionResponse = await response.json();
@@ -125,14 +127,14 @@ export async function startSession(elements: Map<string, CanvasElement>, name: s
         currentSocket.connect();
 
         const ack = await emitJoinSession(payload.sessionId, name, payload.hostToken);
-
+        
         if (ack.error) {
             throw new Error(ack.error);
         }
 
-        if (Array.isArray(ack.elements)) {
-            setCanvasElements(ack.elements);
-        }
+        setCanvasElements(ack.elements ?? {});
+        // if (Array.isArray(ack.elements)) {
+        // }
 
         setSessionState(payload.sessionId, "host");
         return payload.sessionId;
@@ -149,6 +151,8 @@ export async function joinSession(sessionId: string, name: string) {
     setSessionError(null);
     setSessionPending(true);
 
+    console.log("JOINING SESSION");
+
     try {
         const response = await fetch(`${getSyncServerUrl()}/api/sessions/${sessionId}`);
 
@@ -157,9 +161,10 @@ export async function joinSession(sessionId: string, name: string) {
             throw new Error(payload.error || "Session not found or expired");
         }
 
-        const payload: { elements: Map<string, CanvasElement> } = await response.json();
+        const payload = await response.json();
+        // console.log(payload)
         storeLocalBoard(useCanvasElementsStore.getState().canvasElements);
-        setCanvasElements(payload.elements);
+        setCanvasElements(payload.session.elements ?? {});
 
         const hostToken = localStorage.getItem(`hostToken:${sessionId}`) || undefined;
 
@@ -174,11 +179,13 @@ export async function joinSession(sessionId: string, name: string) {
             throw new Error(ack.error);
         }
 
-        if (Array.isArray(ack.elements)) {
-            setCanvasElements(ack.elements);
-        }
+        // if (Array.isArray(ack.elements)) {
+        //     setCanvasElements(ack.elements);
+        // }
 
         setSessionState(sessionId, hostToken ? "host" : "guest");
+
+        console.log("JOINED SESSION");
     } catch (error) {
         const message = error instanceof Error ? error.message : "Failed to join session";
         setSessionError(message);

@@ -1,6 +1,6 @@
-import { SessionSchema, SessionMetaSchema, CanvasElementSchema } from "@excalidraw/shared/schema";
+import { SessionSchema, SessionMetaSchema, CanvasElementSchema, CanvasBaseElementSchema } from "@excalidraw/shared/schema";
 import { getClient } from "./connect.js";
-import { CanvasElement, SessionMetaType, SessionType } from "@excalidraw/shared/types";
+import { CanvasElement, CanvasElements, SessionMetaType, SessionType } from "@excalidraw/shared/types";
 
 export async function getActiveSession(
     sessionId: string,
@@ -12,14 +12,15 @@ export async function getActiveSession(
         if (!sessionMeta) return null;
 
         sessionMeta = JSON.parse(sessionMeta);
+        // console.log("JSON META", sessionMeta);
         const parsedSessionMeta = SessionMetaSchema.parse(sessionMeta);
 
         if (!parsedSessionMeta.active) return null;
         
         let rawSessionElements = await redisClient.hgetall(`session:${sessionId}:elements`);
-        let sessionElements = new Map<string, CanvasElement>();
+        let sessionElements: CanvasElements = {};
         for(const [id, json] of Object.entries(rawSessionElements)) {
-            sessionElements.set(id, CanvasElementSchema.parse(json));
+            sessionElements[id] = CanvasElementSchema.parse(JSON.parse(json));
         }
 
         const session = {

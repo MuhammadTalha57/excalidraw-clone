@@ -45,7 +45,7 @@ function onPointerUp(e: PointerEvent<HTMLCanvasElement>) {
 }
 
 function onPointerMove(e: PointerEvent<HTMLCanvasElement>) {
-    console.log(points);
+    // console.log(points);
     if (!pointerDown) return;
     let coords = screenToWorld(e.clientX, e.clientY);
     points.push(coords);

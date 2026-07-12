@@ -59,6 +59,8 @@ export const CanvasElementSchema = z.discriminatedUnion("type", [
   HandDrawnSchema,
 ]);
 
+export const CanvasElementsSchema = z.record(z.string(), CanvasElementSchema);
+
 export const PartialCanvasElementSchema = z.discriminatedUnion("type", [
   RectangleSchema.partial({ strokeWidth: true, strokeColor: true, top: true, bottom: true, left: true, right: true, isSelected: true, id: true, fillColor: true, x: true, y: true, width: true, height: true }),
   DiamondSchema.partial({ strokeWidth: true, strokeColor: true, top: true, bottom: true, left: true, right: true, isSelected: true, id: true, fillColor: true, x: true, y: true, width: true, height: true }),
@@ -71,7 +73,7 @@ export const PartialCanvasElementSchema = z.discriminatedUnion("type", [
 export const SessionSchema = z.object({
   _id: z.string(),
   
-  elements: z.map(z.string(), CanvasElementSchema),
+  elements: z.record(z.string(), CanvasElementSchema),
   
   hostToken: z.string(),
   
