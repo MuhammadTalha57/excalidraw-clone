@@ -1,6 +1,7 @@
 import { getSocket } from "@/lib/socket";
 import { CanvasElement } from "@/lib/types";
 import { create } from "zustand";
+import { useSessionStore } from "./useSessionStore";
 
 type CanvasElementsStore = {
     canvasElements: Record<string, CanvasElement>;
@@ -23,7 +24,7 @@ export const useCanvasElementsStore = create<CanvasElementsStore>((set) => ({
         set((state) => {
             let newElements = { ...state.canvasElements };
             newElements[element.id] = element;
-            if (broadcast)
+            if (useSessionStore.getState().sessionId && broadcast)
                 getSocket().emit("element-add", { element: element });
             return {
                 canvasElements: newElements,
@@ -37,7 +38,7 @@ export const useCanvasElementsStore = create<CanvasElementsStore>((set) => ({
             const existing = state.canvasElements[id];
             const updated = { ...existing, ...patch } as CanvasElement;
             newElements[id] = updated;
-            if (broadcast) {
+            if (useSessionStore.getState().sessionId && broadcast) {
               console.log("BROADCASTING ELEMENT UPDATE");
                 getSocket().emit("element-update", { id: id, patch: patch, senderId: getSocket().id });
             }
