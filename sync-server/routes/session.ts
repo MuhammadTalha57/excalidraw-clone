@@ -4,6 +4,7 @@ import { generateSessionId, generateHostToken } from "../utils/id.js";
 import { CanvasElementSchema, CanvasElementsSchema } from "@excalidraw/shared/schema";
 import { CanvasElement, CanvasElements, SessionType } from "@excalidraw/shared/types";
 import { parse } from "path";
+import {logger} from "../utils/logger.js"
 
 export const sessionRouter = Router();
 
@@ -29,7 +30,8 @@ sessionRouter.post("/", async (req, res) => {
     await Session.create({
       ...session
     });
-
+    
+    logger.info(`${hostName} created new session`);
     res.status(201).json({ sessionId, hostToken });
   } catch (err) {
     console.error("[POST /api/sessions] error:", err);

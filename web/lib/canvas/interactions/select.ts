@@ -25,6 +25,7 @@ export function handleSelect(points: Point[], e: "UP" | "DOWN" | "MOVE") {
 }
 
 function onPointerDown(points: Point[]) {
+  selectedElements = {};
   const point = points[0];
   const selected = Object.values(useCanvasElementsStore.getState().canvasElements).filter((e) =>  e.isSelected)
 
@@ -98,34 +99,63 @@ function onPointerMove(points: Point[]) {
 
     // Move Elements
     const updateElement = useCanvasElementsStore.getState().updateCanvasElement;
-    for (const [id, e] of Object.entries(selectedElements)) {
-      updateElement(id, moveElement(e, dx, dy));
+
+    const liveCanvasElements = useCanvasElementsStore.getState().canvasElements;
+
+    for (const id of Object.keys(selectedElements)) {
+      if(liveCanvasElements[id])
+      updateElement(id, moveElement(liveCanvasElements[id], dx, dy));
     }
 
-    // Move Selection Box and update selection box
-    if (selectedElementsOverlayStart) {
-      if(selectedElementsOverlayStart.type === "rectangle") {
+    dragStartPoint = points[points.length - 1];
 
+    // Move Selection Box and update selection box
+    const currentOverlay = useSelectedElementsOverlayStore.getState().selectedElementsOverlay;
+    if(currentOverlay) {
+      if(currentOverlay.type === "rectangle") {
         useSelectedElementsOverlayStore.getState().setSelectedElementsOverlay({
-          ...selectedElementsOverlayStart,
-          x: selectedElementsOverlayStart.x + dx,
-          y: selectedElementsOverlayStart.y + dy,
-          top: selectedElementsOverlayStart.top + dy,
-          bottom: selectedElementsOverlayStart.bottom + dy,
-          left: selectedElementsOverlayStart.left + dx,
-          right: selectedElementsOverlayStart.right + dx,
-        });
+        ...currentOverlay,
+        x: currentOverlay.x + dx,
+        y: currentOverlay.y + dy,
+        top: currentOverlay.top + dy,
+        bottom: currentOverlay.bottom + dy,
+        left: currentOverlay.left + dx,
+        right: currentOverlay.right + dx,
+      });
       } else {
-        useSelectedElementsOverlayStore.getState().setSelectedElementsOverlay({
-          ...selectedElementsOverlayStart,
-          p1: {x: selectedElementsOverlayStart.p1.x + dx, y: selectedElementsOverlayStart.p1.y + dy},
-          p2: {x: selectedElementsOverlayStart.p2.x + dx, y: selectedElementsOverlayStart.p2.y + dy},
-          top: selectedElementsOverlayStart.top + dy,
-          bottom: selectedElementsOverlayStart.bottom + dy,
-          left: selectedElementsOverlayStart.left + dx,
-          right: selectedElementsOverlayStart.right + dx,
-        });
-      }
+      useSelectedElementsOverlayStore.getState().setSelectedElementsOverlay({
+        ...currentOverlay,
+        p1: { x: currentOverlay.p1.x + dx, y: currentOverlay.p1.y + dy },
+        p2: { x: currentOverlay.p2.x + dx, y: currentOverlay.p2.y + dy },
+        top: currentOverlay.top + dy,
+        bottom: currentOverlay.bottom + dy,
+        left: currentOverlay.left + dx,
+        right: currentOverlay.right + dx,
+      });
+    }
+    // if (selectedElementsOverlayStart) {
+    //   if(selectedElementsOverlayStart.type === "rectangle") {
+
+    //     useSelectedElementsOverlayStore.getState().setSelectedElementsOverlay({
+    //       ...selectedElementsOverlayStart,
+    //       x: selectedElementsOverlayStart.x + dx,
+    //       y: selectedElementsOverlayStart.y + dy,
+    //       top: selectedElementsOverlayStart.top + dy,
+    //       bottom: selectedElementsOverlayStart.bottom + dy,
+    //       left: selectedElementsOverlayStart.left + dx,
+    //       right: selectedElementsOverlayStart.right + dx,
+    //     });
+    //   } else {
+    //     useSelectedElementsOverlayStore.getState().setSelectedElementsOverlay({
+    //       ...selectedElementsOverlayStart,
+    //       p1: {x: selectedElementsOverlayStart.p1.x + dx, y: selectedElementsOverlayStart.p1.y + dy},
+    //       p2: {x: selectedElementsOverlayStart.p2.x + dx, y: selectedElementsOverlayStart.p2.y + dy},
+    //       top: selectedElementsOverlayStart.top + dy,
+    //       bottom: selectedElementsOverlayStart.bottom + dy,
+    //       left: selectedElementsOverlayStart.left + dx,
+    //       right: selectedElementsOverlayStart.right + dx,
+    //     });
+    //   }
     }
   } else {
     // Resize

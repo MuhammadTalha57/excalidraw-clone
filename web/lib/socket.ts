@@ -57,11 +57,17 @@ function bindSocketListeners() {
 
     const currentSocket = getSocket();
 
-    currentSocket.on("element-update", ({ id, patch }: { id: string, patch: Partial<CanvasElement> }) => {
+    currentSocket.on("element-update", ({ id, patch, senderId }: { id: string, patch: Partial<CanvasElement>, senderId: any }) => {
+        console.log("Received Element Update");
+        if (senderId === currentSocket.id) {
+        console.log("Ignored self-echo packet");
+        return; 
+    }
         updateCanvasElement(id, patch, false);
     });
 
     currentSocket.on("element-add", ({ element }: { element?: CanvasElement }) => {
+        console.log("Received Element Addition");
         if (element) {
             addCanvasElement(element, false);
         }

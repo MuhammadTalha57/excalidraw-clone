@@ -77,6 +77,8 @@ export function registerSocketHandlers(io: Server) {
           // );
         }
 
+        logger.info(`${currentName} joined session:${sessionId}`);
+
         ack?.({ elements: state.elements, isHost });
         socket.to(sessionId).emit("peer-joined", { name: currentName });
       } catch (err) {
@@ -86,8 +88,8 @@ export function registerSocketHandlers(io: Server) {
     });
 
 
-    socket.on("element-update", async ({id, patch} :{id: string, patch: PartialCanvasElement}) => {
-      logger.info("RECEIVED ELEMENT UPDATE:", currentName);
+    socket.on("element-update", async ({id, patch, senderId} :{id: string, patch: PartialCanvasElement, senderId: any}) => {
+      logger.info(`Received Element Update by ${currentName} on socket:${socket.id}`);
       patch = PartialCanvasElementSchema.parse(patch);
       if (!currentSessionId) return;
 
@@ -108,14 +110,16 @@ export function registerSocketHandlers(io: Server) {
       // state.elements.set(id, updatedElement);
       updateElement(currentSessionId, updatedElement);
 
-      socket.to(currentSessionId).emit("element-update", { id, patch });
+      logger.info(`Emitting Element Update by ${currentName} on socket:${socket.id}`);
+      socket.to(currentSessionId).emit("element-update", { id, patch, senderId });
       scheduleSave(currentSessionId);
     });
 
-    socket.on("element-add", ({ element } = {}) => {
+    socket.on("element-add", async ({ element } = {}) => {
+      logger.info(`Received Element Add by ${currentName}`);
       if (!currentSessionId) return;
 
-      const state = getActiveSession(currentSessionId);
+      const state = await getActiveSession(currentSessionId);
       if (!state) return;
 
       element = CanvasElementSchema.parse(element);
