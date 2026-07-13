@@ -1,11 +1,11 @@
-import { Point } from "@/lib/types";
+import { Point } from "@excalidraw/shared/types";
 import { useCanvasElementsStore } from "@/stores/useCanvasElements";
 import { useErasingElementsStore } from "@/stores/useErasingElements";
 import { hitTestEraser } from "@/lib/canvas/eraserHitTest";
 
-export function handleEraser(points: Point[], e: "UP" | "DOWN" | "MOVE") {
+export function handleEraser(points: Point[], e: "UP" | "DOWN" | "MOVE", pointerDown: boolean) {
   if (e === "UP") onPointerUp(points);
-  else if (e === "MOVE") onPointerMove(points);
+  else if (e === "MOVE" && pointerDown) onPointerMove(points);
   else if (e === "DOWN") onPointerDown(points);
 }
 
@@ -27,7 +27,7 @@ function onPointerUp(points: Point[]) {
   }
 
   clearErasingIds();
-  points = [];
+  points.length = 0;
 }
 
 function eraseAtPoint(point: Point) {

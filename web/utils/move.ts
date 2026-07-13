@@ -1,4 +1,4 @@
-import { CanvasElement } from "@/lib/types";
+import { CanvasElement } from "@excalidraw/shared/types";
 
 export function moveElement(original: CanvasElement, dx: number, dy: number): CanvasElement {
   if (original.type === "line" || original.type === "arrow") {

@@ -1,4 +1,4 @@
-import { Point } from "@/lib/types";
+import { Point } from "@excalidraw/shared/types";
 import { useCameraStore } from "@/stores/useCamera";
 
 
@@ -7,9 +7,11 @@ const setOffsetY = useCameraStore.getState().setOffsetY;
 
 const PAN_SPEED = 0.5;
 
-export function handleHand(points: Point[], e: "UP" | "DOWN" | "MOVE") {
-  if (e === "MOVE") {
+export function handleHand(points: Point[], e: "UP" | "DOWN" | "MOVE", pointerDown: boolean) {
+  if (e === "MOVE" && pointerDown) {
     onPointerMove(points);
+  } else if(e === "UP") {
+    points.length = 0;
   }
 }
 

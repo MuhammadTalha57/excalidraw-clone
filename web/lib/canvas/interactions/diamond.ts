@@ -1,5 +1,5 @@
 import { generateId } from "@/lib/id";
-import { Diamond, Point } from "@/lib/types";
+import { Diamond, Point } from "@excalidraw/shared/types";
 import { useCanvasElementsStore } from "@/stores/useCanvasElements";
 import { usePreviewElementStore } from "@/stores/usePreviewElement";
 import { useShapeOptionsStore } from "@/stores/useShapeOptions";

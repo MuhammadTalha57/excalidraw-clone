@@ -1,12 +1,18 @@
 import { useCanvasElementsStore } from "@/stores/useCanvasElements";
 import { useSelectionBoxStore } from "@/stores/useSelectionBox";
 import { getBoundingRectangle } from "@/utils/boundingRectangle";
-import { moveElement } from "./move";
-import { CanvasElement, HandleName, Line, Point, Rectangle } from "@/lib/types";
+import { moveElement } from "../../../utils/move";
+import {
+    CanvasElement,
+    Line,
+    Point,
+    Rectangle,
+    CanvasElements,
+} from "@excalidraw/shared/types";
+import { HandleName } from "@/lib/types";
 import { hitTest } from "@/lib/selectionHitTest";
 import { useSelectedElementsOverlayStore } from "@/stores/useSelectedElementsBox";
 import { generateId } from "@/lib/id";
-import { CanvasElements } from "@excalidraw/shared/types";
 
 const setSelectionBox = useSelectionBoxStore.getState().setSelectionBox;
 const setSelectedElementsOverlay =
@@ -18,15 +24,17 @@ let dragHandle: HandleName | null = null;
 let selectedElements: CanvasElements = {};
 let selectedElementsOverlayStart: Rectangle | Line | null = null;
 
-export function handleSelect(points: Point[], e: "UP" | "DOWN" | "MOVE") {
+export function handleSelect(points: Point[], e: "UP" | "DOWN" | "MOVE", pointerDown: boolean) {
     if (e === "UP") onPointerUp(points);
-    else if (e === "MOVE") onPointerMove(points);
+    else if (e === "MOVE" && pointerDown) onPointerMove(points);
     else if (e === "DOWN") onPointerDown(points);
 }
 
 function onPointerDown(points: Point[]) {
     selectedElements = {};
-    const point = points[0];
+    const point = points[points.length - 1];
+    points.length = 0;
+    points.push(point);
     const selected = Object.values(
         useCanvasElementsStore.getState().canvasElements,
     ).filter((e) => e.isSelected);
@@ -48,6 +56,7 @@ function onPointerDown(points: Point[]) {
 }
 
 function onPointerMove(points: Point[]) {
+    // if(Object.keys(selectedElements).length === 0) return;
     if (dragMode === "none") {
         useSelectedElementsOverlayStore
             .getState()
@@ -149,29 +158,6 @@ function onPointerMove(points: Point[]) {
                         right: currentOverlay.right + dx,
                     });
             }
-            // if (selectedElementsOverlayStart) {
-            //   if(selectedElementsOverlayStart.type === "rectangle") {
-
-            //     useSelectedElementsOverlayStore.getState().setSelectedElementsOverlay({
-            //       ...selectedElementsOverlayStart,
-            //       x: selectedElementsOverlayStart.x + dx,
-            //       y: selectedElementsOverlayStart.y + dy,
-            //       top: selectedElementsOverlayStart.top + dy,
-            //       bottom: selectedElementsOverlayStart.bottom + dy,
-            //       left: selectedElementsOverlayStart.left + dx,
-            //       right: selectedElementsOverlayStart.right + dx,
-            //     });
-            //   } else {
-            //     useSelectedElementsOverlayStore.getState().setSelectedElementsOverlay({
-            //       ...selectedElementsOverlayStart,
-            //       p1: {x: selectedElementsOverlayStart.p1.x + dx, y: selectedElementsOverlayStart.p1.y + dy},
-            //       p2: {x: selectedElementsOverlayStart.p2.x + dx, y: selectedElementsOverlayStart.p2.y + dy},
-            //       top: selectedElementsOverlayStart.top + dy,
-            //       bottom: selectedElementsOverlayStart.bottom + dy,
-            //       left: selectedElementsOverlayStart.left + dx,
-            //       right: selectedElementsOverlayStart.right + dx,
-            //     });
-            //   }
         }
     } else {
         // Resize
@@ -245,12 +231,12 @@ function onPointerUp(points: Point[]) {
             createSelectedElementsOverlay();
         }
     }
-    points = [];
+    points.length = 0;
+    console.log("CLEAR");
 
     dragMode = "none";
     dragStartPoint = null;
     selectedElements = {};
-    // selectedElements.clear();
 }
 
 function markSelectedElements(selectionBox: Rectangle) {

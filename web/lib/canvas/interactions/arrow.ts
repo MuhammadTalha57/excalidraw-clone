@@ -1,5 +1,5 @@
 import { generateId } from "@/lib/id";
-import { Arrow, Point } from "@/lib/types";
+import { Arrow, Point } from "@excalidraw/shared/types";
 import { useCanvasElementsStore } from "@/stores/useCanvasElements";
 import { usePreviewElementStore } from "@/stores/usePreviewElement";
 import { useSelectedElementsOverlayStore } from "@/stores/useSelectedElementsBox";
