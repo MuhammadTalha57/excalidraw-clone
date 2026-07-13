@@ -9,6 +9,7 @@ import { useCameraStore } from "@/stores/useCamera";
 import { useSelectionBoxStore } from "@/stores/useSelectionBox";
 import { useSelectedElementsOverlayStore } from "@/stores/useSelectedElementsBox";
 import { useSelectedToolStore } from "@/stores/useSelectedTool";
+import { useErasingElementsStore } from "@/stores/useErasingElements";
 
 export default function Canvas() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -37,7 +38,7 @@ export default function Canvas() {
         : "crosshair";
 
 
-
+  const erasingIds = useErasingElementsStore((state) => state.erasingIds);
   useLayoutEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -59,7 +60,7 @@ export default function Canvas() {
     ctx.translate(-camera.offsetX, -camera.offsetY);
 
     for (const [id, e] of Object.entries(canvasElements)) {
-      renderElement(ctx, e);
+      renderElement(ctx, e, erasingIds.has(id));
     }
     if (previewElement) renderElement(ctx, previewElement);
 
@@ -67,7 +68,7 @@ export default function Canvas() {
 
     if(selectedElementsOverlay) renderSelectedElementsOverlay(ctx, selectedElementsOverlay);
 
-  }, [previewElement, canvasElements, camera, selectionBox, selectedElementsOverlay]);
+  }, [previewElement, canvasElements, camera, selectionBox, selectedElementsOverlay, erasingIds]);
   return (
     <canvas
       ref={canvasRef}

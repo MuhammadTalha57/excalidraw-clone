@@ -14,6 +14,8 @@ type CanvasElementsStore = {
         broadcast?: boolean,
     ) => void;
 
+    deleteCanvasElements: (ids: string[], broadcast?: boolean) => void;
+
     setCanvasElements: (elements: Record<string, CanvasElement>) => void;
 };
 
@@ -33,14 +35,36 @@ export const useCanvasElementsStore = create<CanvasElementsStore>((set) => ({
 
     updateCanvasElement: (id, patch, broadcast = true) =>
         set((state) => {
-          console.log("UPDATING ELEMENT");
+            console.log("UPDATING ELEMENT");
             let newElements = { ...state.canvasElements };
             const existing = state.canvasElements[id];
             const updated = { ...existing, ...patch } as CanvasElement;
             newElements[id] = updated;
             if (useSessionStore.getState().sessionId && broadcast) {
-              console.log("BROADCASTING ELEMENT UPDATE");
-                getSocket().emit("element-update", { id: id, patch: patch, senderId: getSocket().id });
+                console.log("BROADCASTING ELEMENT UPDATE");
+                getSocket().emit("element-update", {
+                    id: id,
+                    patch: patch,
+                    senderId: getSocket().id,
+                });
+            }
+
+            return {
+                canvasElements: newElements,
+            };
+        }),
+
+    deleteCanvasElements: (ids, broadcast = true) =>
+        set((state) => {
+            if (ids.length === 0) return state;
+
+            const newElements = { ...state.canvasElements };
+            for (const id of ids) {
+                delete newElements[id];
+            }
+
+            if (useSessionStore.getState().sessionId && broadcast) {
+                getSocket().emit("element-delete", { ids });
             }
 
             return {

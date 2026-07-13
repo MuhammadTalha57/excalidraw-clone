@@ -12,8 +12,13 @@ const HANDLE_SIZE = 8;
 export default function renderElement(
   ctx: CanvasRenderingContext2D,
   element: CanvasElement,
+  isErasing: boolean = false,
 ) {
   ctx.save();
+
+  if(isErasing) {
+    ctx.globalAlpha = 0.35;
+  }
 
   ctx.lineWidth = element.strokeWidth;
   ctx.strokeStyle = element.strokeColor;

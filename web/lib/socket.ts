@@ -73,6 +73,10 @@ function bindSocketListeners() {
         }
     });
 
+    currentSocket.on("element-delete", ({ids}: {ids: string[]}) => {
+        useCanvasElementsStore.getState().deleteCanvasElements(ids, false);
+    })
+
     currentSocket.on("session-ended", () => {
         restoreLocalBoard();
         clearSessionState();
