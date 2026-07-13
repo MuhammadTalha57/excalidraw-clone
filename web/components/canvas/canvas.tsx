@@ -1,7 +1,9 @@
 "use client";
 
-import { useLayoutEffect, useEffect, useRef, useState } from "react";
-import renderElement, { renderSelectedElementsOverlay } from "../../lib/canvas/renderElement";
+import { useEffect, useLayoutEffect, useRef } from "react";
+import renderElement, {
+    renderSelectedElementsOverlay,
+} from "../../lib/canvas/renderElement";
 import pointerHandler from "../../lib/canvas/interactions/captureInteraction";
 import { usePreviewElementStore } from "@/stores/usePreviewElement";
 import { useCanvasElementsStore } from "@/stores/useCanvasElements";
@@ -12,72 +14,98 @@ import { useSelectedToolStore } from "@/stores/useSelectedTool";
 import { useErasingElementsStore } from "@/stores/useErasingElements";
 
 export default function Canvas() {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+    const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  const handler = pointerHandler();
+    const handler = pointerHandler();
 
-  const canvasElements = useCanvasElementsStore(
-    (state) => state.canvasElements,
-  );
-  const previewElement = usePreviewElementStore(
-    (state) => state.previewElement,
-  );
+    const canvasElements = useCanvasElementsStore(
+        (state) => state.canvasElements,
+    );
+    const previewElement = usePreviewElementStore(
+        (state) => state.previewElement,
+    );
 
-  const selectionBox = useSelectionBoxStore((state) => state.selectionBox,);
+    const selectionBox = useSelectionBoxStore((state) => state.selectionBox);
 
-  const selectedElementsOverlay = useSelectedElementsOverlayStore((state) => state.selectedElementsOverlay);
+    const selectedElementsOverlay = useSelectedElementsOverlayStore(
+        (state) => state.selectedElementsOverlay,
+    );
 
-  const camera = useCameraStore((state) => state);
+    const selectedTool = useSelectedToolStore((state) => state.selectedTool);
+    const cursorClass =
+        selectedTool === "hand"
+            ? "grab"
+            : selectedTool === "select"
+              ? "default"
+              : "crosshair";
 
-  const selectedTool = useSelectedToolStore((state) => state.selectedTool);
-  const cursorClass =
-    selectedTool === "hand"
-        ? "grab"
-        : selectedTool === "select"
-        ? "default"
-        : "crosshair";
+    const erasingIds = useErasingElementsStore((state) => state.erasingIds);
 
+    const camera = useCameraStore((state) => state);
 
-  const erasingIds = useErasingElementsStore((state) => state.erasingIds);
-  useLayoutEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    // Prevents Screnn Scroll while Zooming
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas || !handler.onWheel) return;
 
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+        const handleWheel = (e: WheelEvent) => {
+            // This stops the whole page from bouncing or scrolling up and down
+            e.preventDefault();
+            handler.onWheel(e as any);
+        };
 
-    const dpr = window.devicePixelRatio || 1;
-    const cssWidth = window.innerWidth;
-    const cssHeight = window.innerHeight;
+        canvas.addEventListener("wheel", handleWheel, { passive: false });
 
-    canvas.style.width = `${cssWidth}px`;
-    canvas.style.height = `${cssHeight}px`;
-    canvas.width = Math.round(cssWidth * dpr);
-    canvas.height = Math.round(cssHeight * dpr);
+        return () => {
+            canvas.removeEventListener("wheel", handleWheel);
+        };
+    }, [handler.onWheel]);
 
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.scale(camera.zoom, camera.zoom);
-    ctx.translate(-camera.offsetX, -camera.offsetY);
+    useLayoutEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
 
-    for (const [id, e] of Object.entries(canvasElements)) {
-      renderElement(ctx, e, erasingIds.has(id));
-    }
-    if (previewElement) renderElement(ctx, previewElement);
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
 
-    if(selectionBox) renderElement(ctx, selectionBox);
+        const dpr = window.devicePixelRatio || 1;
+        const cssWidth = window.innerWidth;
+        const cssHeight = window.innerHeight;
 
-    if(selectedElementsOverlay) renderSelectedElementsOverlay(ctx, selectedElementsOverlay);
+        canvas.style.width = `${cssWidth}px`;
+        canvas.style.height = `${cssHeight}px`;
+        canvas.width = Math.round(cssWidth * dpr);
+        canvas.height = Math.round(cssHeight * dpr);
 
-  }, [previewElement, canvasElements, camera, selectionBox, selectedElementsOverlay, erasingIds]);
-  return (
-    <canvas
-      ref={canvasRef}
-      style={{cursor: cursorClass}}
-      className={`bg-[#ffffff]`}
-      onPointerMove={handler.onPointerMove}
-      onPointerUp={handler.onPointerUp}
-      onPointerDown={handler.onPointerDown}
-      onWheel={handler.onWheel}
-    />
-  );
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.scale(camera.zoom, camera.zoom);
+        ctx.translate(-camera.offsetX, -camera.offsetY);
+
+        for (const [id, e] of Object.entries(canvasElements)) {
+            renderElement(ctx, e, erasingIds.has(id));
+        }
+        if (previewElement) renderElement(ctx, previewElement);
+
+        if (selectionBox) renderElement(ctx, selectionBox);
+
+        if (selectedElementsOverlay)
+            renderSelectedElementsOverlay(ctx, selectedElementsOverlay);
+    }, [
+        previewElement,
+        canvasElements,
+        camera,
+        selectionBox,
+        selectedElementsOverlay,
+        erasingIds,
+    ]);
+    return (
+        <canvas
+            ref={canvasRef}
+            style={{ cursor: cursorClass, touchAction: "none" }}
+            className={`bg-[#ffffff]`}
+            onPointerMove={handler.onPointerMove}
+            onPointerUp={handler.onPointerUp}
+            onPointerDown={handler.onPointerDown}
+        />
+    );
 }

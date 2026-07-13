@@ -57,7 +57,8 @@ function onPointerMove(e: PointerEvent<HTMLCanvasElement>) {
 }
 
 function onWheel(e: WheelEvent<HTMLCanvasElement>) {
-    if(!e.ctrlKey) return;
+    // if(!e.ctrlKey) return;
+    e.preventDefault();
 
     handleZoom(e);
 }
