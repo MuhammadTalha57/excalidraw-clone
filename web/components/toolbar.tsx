@@ -10,53 +10,64 @@ export type ToolbarItem = {
     selectedIcon?: ReactNode;
     className?: string;
     selectedClassName?: string;
+    shortcutKey?: string;
 };
 
 export const defaultToolbarItems: ToolbarItem[] = [
     {
-        name: "select",
-        icon: <SelectIcon />,
-        selectedIcon: <SelectIcon active />,
-    },
-    {
         name: "hand",
         icon: <HandIcon />,
         selectedIcon: <HandIcon active />,
+
+    },
+    {
+        name: "select",
+        icon: <SelectIcon />,
+        selectedIcon: <SelectIcon active />,
+        shortcutKey: "1",
     },
     {
         name: "rectangle",
         icon: <RectangleIcon />,
         selectedIcon: <RectangleIcon active />,
+        shortcutKey: "2",
+        
     },
     {
         name: "diamond",
         icon: <DiamondIcon />,
         selectedIcon: <DiamondIcon active />,
+        shortcutKey: "3",
     },
     {
         name: "ellipse",
         icon: <EllipseIcon />,
         selectedIcon: <EllipseIcon active />,
+        shortcutKey: "4",
     },
     {
         name: "arrow",
         icon: <ArrowIcon />,
         selectedIcon: <ArrowIcon active />,
+        shortcutKey: "5",
     },
     {
         name: "line",
         icon: <LineIcon />,
         selectedIcon: <LineIcon active />,
+        shortcutKey: "6",
     },
     {
         name: "draw",
         icon: <DrawIcon />,
         selectedIcon: <DrawIcon active />,
+        shortcutKey: "7",
     },
     {
         name: "eraser",
         icon: <EraserIcon />,
         selectedIcon: <EraserIcon active />,
+        shortcutKey: "0",
     },
 ];
 
@@ -171,8 +182,10 @@ export default function Toolbar({
                                             : "bg-transparent"
                                     } ${isSelected ? (item.selectedClassName ?? "") : (item.className ?? "")}`}
                                 >
+                                    <span style={{position: "relative", fontSize: "0.5em", top: "14px", left: "20px"}} className="text-slate-500">{item.shortcutKey ?? ""}</span>
                                     {icon}
                                 </button>
+                                
                             </div>
                         );
                     })}

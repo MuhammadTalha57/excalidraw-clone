@@ -106,6 +106,8 @@ export default function Canvas() {
             onPointerMove={handler.onPointerMove}
             onPointerUp={handler.onPointerUp}
             onPointerDown={handler.onPointerDown}
+            onKeyDown={handler.onKeyDown}
+            tabIndex={0}
         />
     );
 }

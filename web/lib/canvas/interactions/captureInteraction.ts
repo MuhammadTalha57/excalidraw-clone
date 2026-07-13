@@ -6,12 +6,13 @@ import { handleEllipse } from "./ellipse";
 import { handleLine } from "./line";
 import { handleRectangle } from "./rectangle";
 import { useSelectedToolStore } from "@/stores/useSelectedTool";
-import { PointerEvent, WheelEvent } from "react";
+import { KeyboardEventHandler, PointerEvent, WheelEvent } from "react";
 import { handleHand } from "./hand";
 import { handleZoom } from "./zoom";
 import { handleSelect } from "./select";
 import { Point } from "@excalidraw/shared/types";
 import { handleEraser } from "./eraser";
+import handleKeyboardShortcut from "@/utils/keyboardShortcuts";
 
 let handlers: Record<any, any> = {
     rectangle: handleRectangle,
@@ -30,7 +31,7 @@ let pointerDown = false;
 // Clears points on changing tool
 useSelectedToolStore.subscribe((state) => {
     points = [];
-    pointerDown = false; 
+    pointerDown = false;
 });
 
 function onPointerDown(e: PointerEvent<HTMLCanvasElement>) {
@@ -61,6 +62,10 @@ function onWheel(e: WheelEvent<HTMLCanvasElement>) {
     handleZoom(e);
 }
 
+function onKeyDown(e: any) {
+    handleKeyboardShortcut(e.key);
+}
+
 export default function pointerHandler() {
-    return { onPointerDown, onPointerUp, onPointerMove, onWheel };
+    return { onPointerDown, onPointerUp, onPointerMove, onWheel, onKeyDown };
 }
