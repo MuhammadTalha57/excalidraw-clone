@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import { useCursorStore } from "@/stores/useCursorStore";
+import { HandleName } from "@/lib/types";
 import renderElement, {
     renderSelectedElementsOverlay,
 } from "../../lib/canvas/renderElement";
@@ -32,12 +34,24 @@ export default function Canvas() {
     );
 
     const selectedTool = useSelectedToolStore((state) => state.selectedTool);
-    const cursorClass =
-        selectedTool === "hand"
-            ? "grab"
-            : selectedTool === "select"
-              ? "default"
-              : "crosshair";
+    const dragMode = useCursorStore((state) => state.dragMode);
+    const dragHandle = useCursorStore((state) => state.dragHandle);
+    const hoverHandle = useCursorStore((state) => state.hoverHandle);
+    const hoverBody = useCursorStore((state) => state.hoverBody);
+
+    const cursorClass = useMemo(() => {
+        if (selectedTool === "hand") return "grab";
+
+        if (selectedTool === "select") {
+            const activeHandle =
+                dragMode === "resize" ? dragHandle : hoverHandle;
+            if (activeHandle) return handleCursor(activeHandle);
+            if (dragMode === "move" || hoverBody) return "move";
+            return "default";
+        }
+
+        return "crosshair";
+    }, [selectedTool, dragMode, dragHandle, hoverHandle, hoverBody]);
 
     const erasingIds = useErasingElementsStore((state) => state.erasingIds);
 
@@ -110,4 +124,26 @@ export default function Canvas() {
             tabIndex={0}
         />
     );
+}
+
+function handleCursor(handle: HandleName): string {
+    switch (handle) {
+        case "n":
+        case "s":
+            return "ns-resize";
+        case "e":
+        case "w":
+            return "ew-resize";
+        case "ne":
+        case "sw":
+            return "nesw-resize";
+        case "nw":
+        case "se":
+            return "nwse-resize";
+        case "p1":
+        case "p2":
+            return "crosshair";
+        default:
+            return "default";
+    }
 }

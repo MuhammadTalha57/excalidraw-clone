@@ -1,3 +1,4 @@
+// hitTest.ts... (unchanged header)
 import { useCanvasElementsStore } from "@/stores/useCanvasElements";
 import { useSelectionBoxStore } from "@/stores/useSelectionBox";
 import { getBoundingRectangle } from "@/utils/boundingRectangle";
@@ -5,6 +6,7 @@ import { moveElement } from "../../../utils/move";
 import {
     CanvasElement,
     Line,
+    Arrow,
     Point,
     Rectangle,
     CanvasElements,
@@ -13,6 +15,7 @@ import { HandleName } from "@/lib/types";
 import { hitTest } from "@/lib/selectionHitTest";
 import { useSelectedElementsOverlayStore } from "@/stores/useSelectedElementsBox";
 import { generateId } from "@/lib/id";
+import { useCursorStore } from "@/stores/useCursorStore";
 
 const setSelectionBox = useSelectionBoxStore.getState().setSelectionBox;
 const setSelectedElementsOverlay =
@@ -24,6 +27,17 @@ let dragHandle: HandleName | null = null;
 let selectedElements: CanvasElements = {};
 let selectedElementsOverlayStart: Rectangle | Line | null = null;
 
+// Captured once when a resize begins, so every subsequent move computes a
+// TOTAL delta from the original pointer position / bounding box, rather
+// than accumulating small per-frame deltas (which drifts).
+let resizeStartPointerPos: Point | null = null;
+let resizeStartBounds: {
+    left: number;
+    top: number;
+    right: number;
+    bottom: number;
+} | null = null;
+
 export function handleSelect(
     points: Point[],
     e: "UP" | "DOWN" | "MOVE",
@@ -32,6 +46,22 @@ export function handleSelect(
     if (e === "UP") onPointerUp(points);
     else if (e === "MOVE" && pointerDown) onPointerMove(points);
     else if (e === "DOWN") onPointerDown(points);
+}
+
+// Hover-only hit test — called on every pointer move regardless of button
+// state, purely to drive cursor styling before a drag actually starts.
+export function updateHoverCursor(point: Point) {
+    if (dragMode !== "none") return; // an active drag owns the cursor
+
+    const hit = hitTest(point);
+
+    if (hit.type === "handle") {
+        useCursorStore.getState().setHoverState(hit.handle, false);
+    } else if (hit.type === "body") {
+        useCursorStore.getState().setHoverState(null, true);
+    } else {
+        useCursorStore.getState().clearHoverState();
+    }
 }
 
 function onPointerDown(points: Point[]) {
@@ -56,6 +86,9 @@ function onPointerDown(points: Point[]) {
         )) {
             e.isSelected = false;
         }
+        resizeStartPointerPos = null;
+        resizeStartBounds = null;
+        useCursorStore.getState().setDragState("none", null);
         return;
     }
 
@@ -65,10 +98,22 @@ function onPointerDown(points: Point[]) {
     for (const e of selected) selectedElements[e.id] = e;
     selectedElementsOverlayStart =
         useSelectedElementsOverlayStore.getState().selectedElementsOverlay;
+
+    if (dragMode === "resize" && dragHandle) {
+        resizeStartPointerPos = point;
+        resizeStartBounds =
+            dragHandle === "p1" || dragHandle === "p2"
+                ? null
+                : computeSelectionBounds(selectedElements);
+    } else {
+        resizeStartPointerPos = null;
+        resizeStartBounds = null;
+    }
+
+    useCursorStore.getState().setDragState(dragMode, dragHandle);
 }
 
 function onPointerMove(points: Point[]) {
-    // if(Object.keys(selectedElements).length === 0) return;
     if (dragMode === "none") {
         useSelectedElementsOverlayStore
             .getState()
@@ -81,7 +126,6 @@ function onPointerMove(points: Point[]) {
         if (points.length < 2) return;
 
         // Create a Selection box
-
         const boundingRect = getBoundingRectangle(
             points[0].x,
             points[0].y,
@@ -110,10 +154,7 @@ function onPointerMove(points: Point[]) {
         };
 
         markSelectedElements(selectionBox);
-
-        // Set Selection Box
         setSelectionBox(selectionBox);
-
         return;
     }
 
@@ -121,10 +162,8 @@ function onPointerMove(points: Point[]) {
         let dx = points[points.length - 1].x - dragStartPoint!.x;
         let dy = points[points.length - 1].y - dragStartPoint!.y;
 
-        // Move Elements
         const updateElement =
             useCanvasElementsStore.getState().updateCanvasElement;
-
         const liveCanvasElements =
             useCanvasElementsStore.getState().canvasElements;
 
@@ -135,7 +174,6 @@ function onPointerMove(points: Point[]) {
 
         dragStartPoint = points[points.length - 1];
 
-        // Move Selection Box and update selection box
         const currentOverlay =
             useSelectedElementsOverlayStore.getState().selectedElementsOverlay;
         if (currentOverlay) {
@@ -171,84 +209,153 @@ function onPointerMove(points: Point[]) {
                     });
             }
         }
-    } else {
-        // Resize
-        let dx = points[points.length - 1].x - dragStartPoint!.x;
-        let dy = points[points.length - 1].y - dragStartPoint!.y;
+        return;
+    }
 
-        const updateElement =
-            useCanvasElementsStore.getState().updateCanvasElement;
-        const liveCanvasElements =
-            useCanvasElementsStore.getState().canvasElements;
+    // dragMode === "resize"
+    if (!dragHandle || !resizeStartPointerPos) {
+        dragStartPoint = points[points.length - 1];
+        return;
+    }
 
-        const ids = Object.keys(selectedElements);
-        if (ids.length === 1 && dragHandle) {
+    const currentPoint = points[points.length - 1];
+    const totalDx = currentPoint.x - resizeStartPointerPos.x;
+    const totalDy = currentPoint.y - resizeStartPointerPos.y;
+
+    const updateElement = useCanvasElementsStore.getState().updateCanvasElement;
+    const ids = Object.keys(selectedElements);
+
+    if (dragHandle === "p1" || dragHandle === "p2") {
+        // Single line/arrow endpoint drag.
+        if (ids.length === 1) {
             const id = ids[0];
-            const current = liveCanvasElements[id];
+            const original = selectedElements[id];
 
-            if (current) {
-                const resized = resizeElement(current, dragHandle, dx, dy);
+            if (
+                original &&
+                (original.type === "line" || original.type === "arrow")
+            ) {
+                const resized = resizeLineEndpoint(
+                    original,
+                    dragHandle,
+                    totalDx,
+                    totalDy,
+                );
                 updateElement(id, resized);
 
-                if (resized.type === "line" || resized.type === "arrow") {
-                    useSelectedElementsOverlayStore
-                        .getState()
-                        .setSelectedElementsOverlay({
-                            id: generateId(),
-                            type: "line",
-                            strokeWidth: 1,
-                            strokeColor: "#4C6FFF",
-                            top: resized.top,
-                            bottom: resized.bottom,
-                            left: resized.left,
-                            right: resized.right,
-                            p1: resized.p1,
-                            p2: resized.p2,
-                            isSelected: false,
-                        });
-                } else {
-                    useSelectedElementsOverlayStore
-                        .getState()
-                        .setSelectedElementsOverlay({
-                            id: generateId(),
-                            type: "rectangle",
-                            strokeWidth: 1,
-                            strokeColor: "#4C6FFF",
-                            fillColor: "rgba(76, 111, 255, 0.10)",
-                            top: resized.top,
-                            bottom: resized.bottom,
-                            left: resized.left,
-                            right: resized.right,
-                            x: resized.left,
-                            y: resized.top,
-                            width: resized.right - resized.left,
-                            height: resized.bottom - resized.top,
-                            isSelected: false,
-                        });
-                }
+                useSelectedElementsOverlayStore.getState().setSelectedElementsOverlay({
+                    id: generateId(),
+                    type: "line",
+                    strokeWidth: 1,
+                    strokeColor: "#4C6FFF",
+                    top: resized.top,
+                    bottom: resized.bottom,
+                    left: resized.left,
+                    right: resized.right,
+                    p1: resized.p1,
+                    p2: resized.p2,
+                    isSelected: false,
+                });
             }
         }
+    } else if (resizeStartBounds) {
+        // Box-handle resize — scales the WHOLE selection (any number of
+        // elements, including handdrawn strokes) relative to its
+        // original bounding box.
+        let { left, top, right, bottom } = resizeStartBounds;
 
-        dragStartPoint = points[points.length - 1];
+        if (dragHandle.includes("n")) top += totalDy;
+        if (dragHandle.includes("s")) bottom += totalDy;
+        if (dragHandle.includes("w")) left += totalDx;
+        if (dragHandle.includes("e")) right += totalDx;
+
+        const MIN_SIZE = 4;
+        if (right - left < MIN_SIZE) {
+            if (dragHandle.includes("w")) left = right - MIN_SIZE;
+            else right = left + MIN_SIZE;
+        }
+        if (bottom - top < MIN_SIZE) {
+            if (dragHandle.includes("n")) top = bottom - MIN_SIZE;
+            else bottom = top + MIN_SIZE;
+        }
+
+        const origW = resizeStartBounds.right - resizeStartBounds.left;
+        const origH = resizeStartBounds.bottom - resizeStartBounds.top;
+
+        const scalesX = dragHandle.includes("e") || dragHandle.includes("w");
+        const scalesY = dragHandle.includes("n") || dragHandle.includes("s");
+
+        const sx = scalesX && origW !== 0 ? (right - left) / origW : 1;
+        const sy = scalesY && origH !== 0 ? (bottom - top) / origH : 1;
+
+        const originLeft = resizeStartBounds.left;
+        const originTop = resizeStartBounds.top;
+
+        const transform = (x: number, y: number): Point => ({
+            x: left + (x - originLeft) * sx,
+            y: top + (y - originTop) * sy,
+        });
+
+        for (const id of ids) {
+            const original = selectedElements[id];
+            if (!original) continue;
+            updateElement(id, scaleElement(original, transform));
+        }
+
+        useSelectedElementsOverlayStore.getState().setSelectedElementsOverlay({
+            id: generateId(),
+            type: "rectangle",
+            strokeWidth: 1,
+            strokeColor: "#4C6FFF",
+            fillColor: "rgba(76, 111, 255, 0.10)",
+            top,
+            bottom,
+            left,
+            right,
+            x: left,
+            y: top,
+            width: right - left,
+            height: bottom - top,
+            isSelected: false,
+        });
     }
+
+    dragStartPoint = currentPoint;
 }
 
 function onPointerUp(points: Point[]) {
     const selectionBox = useSelectionBoxStore.getState().selectionBox;
     if (selectionBox) {
         setSelectionBox(null);
-
-        // Create Selected Elements Overlay
         if (Object.keys(selectedElements).length > 0) {
             createSelectedElementsOverlay();
         }
     }
     points.length = 0;
-    console.log("CLEAR");
 
     dragMode = "none";
     dragStartPoint = null;
+    dragHandle = null;
     selectedElements = {};
+    resizeStartPointerPos = null;
+    resizeStartBounds = null;
+
+    useCursorStore.getState().setDragState("none", null);
+}
+
+function computeSelectionBounds(elements: CanvasElements) {
+    const values = Object.values(elements);
+    if (values.length === 0) return { left: 0, top: 0, right: 0, bottom: 0 };
+
+    return values.reduce(
+        (acc, e) => ({
+            top: Math.min(acc.top, e.top),
+            bottom: Math.max(acc.bottom, e.bottom),
+            left: Math.min(acc.left, e.left),
+            right: Math.max(acc.right, e.right),
+        }),
+        { top: Infinity, bottom: -Infinity, left: Infinity, right: -Infinity },
+    );
 }
 
 function markSelectedElements(selectionBox: Rectangle) {
@@ -272,7 +379,6 @@ function createSelectedElementsOverlay() {
         const e = Object.values(selectedElements)[0];
 
         if (e.type === "line" || e.type === "arrow") {
-            // Create selected elements overlay
             selectedElementsOverlay = {
                 id: generateId(),
                 type: "line",
@@ -291,23 +397,12 @@ function createSelectedElementsOverlay() {
             };
 
             setSelectedElementsOverlay(selectedElementsOverlay);
-
             return;
         }
     }
 
-    // Calculate bounds
-    let temp = Object.values(selectedElements).reduce(
-        (acc, e) => ({
-            top: Math.min(acc.top, e.top),
-            bottom: Math.max(acc.bottom, e.bottom),
-            left: Math.min(acc.left, e.left),
-            right: Math.max(acc.right, e.right),
-        }),
-        { top: Infinity, bottom: -Infinity, left: Infinity, right: -Infinity },
-    );
+    const temp = computeSelectionBounds(selectedElements);
 
-    // Create selected elements overlay
     selectedElementsOverlay = {
         id: generateId(),
         type: "rectangle",
@@ -331,56 +426,88 @@ function createSelectedElementsOverlay() {
     setSelectedElementsOverlay(selectedElementsOverlay);
 }
 
-function resizeElement(
-    el: CanvasElement,
-    handle: HandleName,
+// Moves a single line/arrow endpoint. dx/dy are the TOTAL delta from drag
+// start, applied to the ORIGINAL (pre-drag) endpoint — no accumulation.
+function resizeLineEndpoint(
+    original: Line | Arrow,
+    handle: "p1" | "p2",
     dx: number,
     dy: number,
+): Line | Arrow {
+    if (handle === "p1") {
+        const newP1 = { x: original.p1.x + dx, y: original.p1.y + dy };
+        return {
+            ...original,
+            p1: newP1,
+            top: Math.min(newP1.y, original.p2.y),
+            bottom: Math.max(newP1.y, original.p2.y),
+            left: Math.min(newP1.x, original.p2.x),
+            right: Math.max(newP1.x, original.p2.x),
+        };
+    }
+
+    const newP2 = { x: original.p2.x + dx, y: original.p2.y + dy };
+    return {
+        ...original,
+        p2: newP2,
+        top: Math.min(original.p1.y, newP2.y),
+        bottom: Math.max(original.p1.y, newP2.y),
+        left: Math.min(original.p1.x, newP2.x),
+        right: Math.max(original.p1.x, newP2.x),
+    };
+}
+
+// Applies an affine (scale + translate) transform to every point defining
+// an element's geometry, then recomputes its bounding box. Works
+// uniformly for boxy shapes, lines/arrows, AND handdrawn strokes.
+function scaleElement(
+    el: CanvasElement,
+    transform: (x: number, y: number) => Point,
 ): CanvasElement {
     if (el.type === "line" || el.type === "arrow") {
-        if (handle === "p1") {
-            const newP1 = { x: el.p1.x + dx, y: el.p1.y + dy };
-            return {
-                ...el,
-                p1: newP1,
-                top: Math.min(newP1.y, el.p2.y),
-                bottom: Math.max(newP1.y, el.p2.y),
-                left: Math.min(newP1.x, el.p2.x),
-                right: Math.max(newP1.x, el.p2.x),
-            };
-        }
-        if (handle === "p2") {
-            const newP2 = { x: el.p2.x + dx, y: el.p2.y + dy };
-            return {
-                ...el,
-                p2: newP2,
-                top: Math.min(el.p1.y, newP2.y),
-                bottom: Math.max(el.p1.y, newP2.y),
-                left: Math.min(el.p1.x, newP2.x),
-                right: Math.max(el.p1.x, newP2.x),
-            };
-        }
-        return el;
+        const p1 = transform(el.p1.x, el.p1.y);
+        const p2 = transform(el.p2.x, el.p2.y);
+        return {
+            ...el,
+            p1,
+            p2,
+            top: Math.min(p1.y, p2.y),
+            bottom: Math.max(p1.y, p2.y),
+            left: Math.min(p1.x, p2.x),
+            right: Math.max(p1.x, p2.x),
+        };
     }
 
-    if (el.type === "handdrawn") return el; // skip freehand resize for now
+    if (el.type === "handdrawn") {
+        const points = el.points.map((p) => transform(p.x, p.y));
+        const bounds = points.reduce(
+            (acc, p) => ({
+                minX: Math.min(acc.minX, p.x),
+                maxX: Math.max(acc.maxX, p.x),
+                minY: Math.min(acc.minY, p.y),
+                maxY: Math.max(acc.maxY, p.y),
+            }),
+            { minX: Infinity, maxX: -Infinity, minY: Infinity, maxY: -Infinity },
+        );
 
-    let { left, top, right, bottom } = el;
-
-    if (handle.includes("n")) top += dy;
-    if (handle.includes("s")) bottom += dy;
-    if (handle.includes("w")) left += dx;
-    if (handle.includes("e")) right += dx;
-
-    const MIN_SIZE = 4;
-    if (right - left < MIN_SIZE) {
-        if (handle.includes("w")) left = right - MIN_SIZE;
-        else right = left + MIN_SIZE;
+        return {
+            ...el,
+            points,
+            top: bounds.minY,
+            bottom: bounds.maxY,
+            left: bounds.minX,
+            right: bounds.maxX,
+        };
     }
-    if (bottom - top < MIN_SIZE) {
-        if (handle.includes("n")) top = bottom - MIN_SIZE;
-        else bottom = top + MIN_SIZE;
-    }
+
+    // rectangle | diamond | ellipse
+    const corner1 = transform(el.left, el.top);
+    const corner2 = transform(el.right, el.bottom);
+
+    const left = Math.min(corner1.x, corner2.x);
+    const right = Math.max(corner1.x, corner2.x);
+    const top = Math.min(corner1.y, corner2.y);
+    const bottom = Math.max(corner1.y, corner2.y);
 
     return {
         ...el,
@@ -396,7 +523,6 @@ function resizeElement(
 }
 
 export function cancel() {
-    // Cancel ongoing interaction
     setSelectionBox(null);
     setSelectedElementsOverlay(null);
     for (const e of Object.values(
@@ -404,4 +530,11 @@ export function cancel() {
     )) {
         e.isSelected = false;
     }
+    dragMode = "none";
+    dragHandle = null;
+    dragStartPoint = null;
+    resizeStartPointerPos = null;
+    resizeStartBounds = null;
+    useCursorStore.getState().setDragState("none", null);
+    useCursorStore.getState().clearHoverState();
 }

@@ -9,7 +9,8 @@ import { useSelectedToolStore } from "@/stores/useSelectedTool";
 import { KeyboardEventHandler, PointerEvent, WheelEvent } from "react";
 import { handleHand } from "./hand";
 import { handleZoom } from "./zoom";
-import { handleSelect } from "./select";
+import { handleSelect, updateHoverCursor } from "./select";
+import { useCursorStore } from "@/stores/useCursorStore";
 import { Point } from "@excalidraw/shared/types";
 import { handleEraser } from "./eraser";
 import handleKeyboardShortcut from "@/utils/keyboardShortcuts";
@@ -32,6 +33,8 @@ let pointerDown = false;
 useSelectedToolStore.subscribe((state) => {
     points = [];
     pointerDown = false;
+    useCursorStore.getState().setDragState("none", null);
+    useCursorStore.getState().clearHoverState();
 });
 
 function onPointerDown(e: PointerEvent<HTMLCanvasElement>) {
@@ -55,6 +58,10 @@ function onPointerMove(e: PointerEvent<HTMLCanvasElement>) {
     points.push(coords);
 
     const tool = useSelectedToolStore.getState().selectedTool;
+
+    if (tool === "select" && !pointerDown) {
+        updateHoverCursor(coords);
+    }
     handlers[tool](points, "MOVE", pointerDown);
 }
 
