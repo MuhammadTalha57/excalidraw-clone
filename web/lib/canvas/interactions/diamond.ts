@@ -70,3 +70,9 @@ function onPointerUp(points: Point[]) {
     points.length = 0;
     selectedP1 = null;
 }
+
+export function cancel() {
+    // Cancel ongoing interaction
+    setPreviewElement(null);
+    selectedP1 = null;
+}

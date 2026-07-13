@@ -40,3 +40,8 @@ function eraseAtPoint(point: Point) {
     }
   }
 }
+
+export function cancel() {
+    // Cancel ongoing interaction
+    useErasingElementsStore.getState().clearErasingIds();
+}

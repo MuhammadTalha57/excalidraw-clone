@@ -134,3 +134,10 @@ function onPointerUp(points: Point[]) {
     clicked = false;
     points.length = 0;
 }
+
+export function cancel() {
+    // Cancel ongoing interaction
+    setPreviewElement(null);
+    selectedP1 = null;
+    clicked = false;
+}

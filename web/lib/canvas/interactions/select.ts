@@ -382,3 +382,12 @@ function resizeElement(
         height: bottom - top,
     };
 }
+
+export function cancel() {
+    // Cancel ongoing interaction
+    setSelectionBox(null);
+    setSelectedElementsOverlay(null);
+    for(const e of Object.values(useCanvasElementsStore.getState().canvasElements)) {
+        e.isSelected = false;
+    }
+}
