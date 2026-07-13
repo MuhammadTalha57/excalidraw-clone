@@ -1,4 +1,4 @@
-import { screenToWorld } from "@/lib/coords";
+import { screenToWorld } from "@/utils/coords";
 import { useCameraStore } from "@/stores/useCamera";
 import { WheelEvent } from "react";
 

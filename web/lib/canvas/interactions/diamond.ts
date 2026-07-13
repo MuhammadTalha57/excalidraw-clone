@@ -9,25 +9,29 @@ const setPreviewElement = usePreviewElementStore.getState().setPreviewElement;
 
 const addCanvasElement = useCanvasElementsStore.getState().addCanvasElement;
 
-export function handleDiamond(points: Point[], e: "UP" | "DOWN" | "MOVE") {
+export function handleDiamond(points: Point[], e: "UP" | "DOWN" | "MOVE", pointerDown: boolean) {
   if (e === "UP") onPointerUp(points);
-  else if (e === "MOVE") onPointerMove(points);
+  else if (e === "MOVE" && pointerDown) onPointerMove(points);
   else if (e === "DOWN") onPointerDown(points);
 }
 
+let selectedP1 : Point | null = null;
+
 function onPointerDown(points: Point[]) {
-  // Nothing
+  selectedP1 = points[points.length - 1];
+  points.length = 0;
+  points.push(selectedP1);
 }
 
 function onPointerMove(points: Point[]) {
   // Assuming Only calls when Pointer is down
-  if (points.length < 2) return;
+  if(!selectedP1) return;
 
-  // Create a Preview element for rectangle.
+  // Create a Preview element for diamond.
 
   const boundingRect = getBoundingRectangle(
-    points[0].x,
-    points[0].y,
+    selectedP1.x,
+    selectedP1.y,
     points[points.length - 1].x,
     points[points.length - 1].y,
   );
@@ -63,5 +67,6 @@ function onPointerUp(points: Point[]) {
         addCanvasElement(previewElemet);
         setPreviewElement(null);
     }
-    points = [];
+    points.length = 0;
+    selectedP1 = null;
 }

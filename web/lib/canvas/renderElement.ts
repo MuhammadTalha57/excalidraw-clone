@@ -211,8 +211,14 @@ function renderDraw(ctx: CanvasRenderingContext2D, e: HandDrawn) {
   }
 
   if (pts.length === 1) {
+    // FIX: Set the fill style to the brush stroke color so it isn't transparent
+    ctx.fillStyle = e.strokeColor; 
+    
     ctx.beginPath();
-    ctx.arc(pts[0].x, pts[0].y, (ctx.lineWidth || 1) / 2, 0, Math.PI * 2);
+    // Use the maximum value between width and a base size so thin strokes stay visible
+    const radius = Math.max(ctx.lineWidth, 2) / 2;
+    
+    ctx.arc(pts[0].x, pts[0].y, radius, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
     return;
