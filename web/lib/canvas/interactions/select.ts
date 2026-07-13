@@ -24,13 +24,19 @@ let dragHandle: HandleName | null = null;
 let selectedElements: CanvasElements = {};
 let selectedElementsOverlayStart: Rectangle | Line | null = null;
 
-export function handleSelect(points: Point[], e: "UP" | "DOWN" | "MOVE", pointerDown: boolean) {
+export function handleSelect(
+    points: Point[],
+    e: "UP" | "DOWN" | "MOVE",
+    pointerDown: boolean,
+) {
     if (e === "UP") onPointerUp(points);
     else if (e === "MOVE" && pointerDown) onPointerMove(points);
     else if (e === "DOWN") onPointerDown(points);
 }
 
 function onPointerDown(points: Point[]) {
+    setSelectionBox(null);
+
     selectedElements = {};
     const point = points[points.length - 1];
     points.length = 0;
@@ -44,6 +50,12 @@ function onPointerDown(points: Point[]) {
 
     if (hit.type === "none") {
         dragMode = "none";
+        setSelectedElementsOverlay(null);
+        for (const e of Object.values(
+            useCanvasElementsStore.getState().canvasElements,
+        )) {
+            e.isSelected = false;
+        }
         return;
     }
 
@@ -387,7 +399,9 @@ export function cancel() {
     // Cancel ongoing interaction
     setSelectionBox(null);
     setSelectedElementsOverlay(null);
-    for(const e of Object.values(useCanvasElementsStore.getState().canvasElements)) {
+    for (const e of Object.values(
+        useCanvasElementsStore.getState().canvasElements,
+    )) {
         e.isSelected = false;
     }
 }
