@@ -176,9 +176,9 @@ export default function Toolbar({
                                     onClick={() =>
                                         setSelectedTool(item.name as Tool)
                                     }
-                                    className={`hover:cursor-pointer flex h-11 w-11 items-center justify-center rounded-full border border-transparent text-[#5e564b] transition-all duration-150 hover:-translate-y-px hover:bg-white/80 hover:text-[#1f1b16] hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c77a1f]/35 ${
+                                    className={`hover:cursor-pointer flex h-11 w-11 items-center justify-center rounded-full border border-transparent text-[#5e564b] transition-all duration-150 hover:-translate-y-px hover:bg-[#f1f0ff]  hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c77a1f]/35 ${
                                         isSelected
-                                            ? "border-[#d7b18a] bg-white text-[#1f1b16] shadow-[0_6px_18px_rgba(15,23,42,0.08)]"
+                                            ? "border-[#d7b18a] bg-white text-[#030064] shadow-[0_6px_18px_rgba(15,23,42,0.08)]"
                                             : "bg-transparent"
                                     } ${isSelected ? (item.selectedClassName ?? "") : (item.className ?? "")}`}
                                 >
@@ -208,8 +208,8 @@ function SelectIcon({ active = false }: { active?: boolean }) {
         >
             <path
                 d="M5 4l6.5 14 2-6 6-2-14.5-6z"
-                fill={active ? "currentColor" : "none"}
-                opacity={active ? 0.14 : 1}
+                fill={active ? "#030064" : "none"}
+                // opacity={active ? 0.14 : 1}
             />
             <path d="M5 4l6.5 14 2-6 6-2-14.5-6z" />
         </svg>
@@ -232,8 +232,8 @@ function HandIcon({ active = false }: { active?: boolean }) {
             <path d="M14.5 11V7.8a1.5 1.5 0 0 1 3 0V13" />
             <path
                 d="M7 12.5V9.8a1.5 1.5 0 0 0-3 0v5.2c0 3.5 2.6 6 6.4 6h2.7c3.7 0 6.8-2.9 6.8-6.8V11"
-                fill={active ? "currentColor" : "none"}
-                opacity={active ? 0.14 : 1}
+                fill={active ? "none" : "none"}
+                // opacity={active ? 0.14 : 1}
             />
             <path d="M7 12.5V9.8a1.5 1.5 0 0 0-3 0v5.2c0 3.5 2.6 6 6.4 6h2.7c3.7 0 6.8-2.9 6.8-6.8V11" />
         </svg>
@@ -256,8 +256,8 @@ function RectangleIcon({ active = false }: { active?: boolean }) {
                 width="14"
                 height="12"
                 rx="1.5"
-                fill={active ? "currentColor" : "none"}
-                opacity={active ? 0.14 : 1}
+                fill={active ? "#030064" : "none"}
+                // opacity={active ? 0.14 : 1}
             />
             <rect x="5" y="6" width="14" height="12" rx="1.5" />
         </svg>
@@ -276,8 +276,8 @@ function DiamondIcon({ active = false }: { active?: boolean }) {
         >
             <path
                 d="M12 4.5 19 12l-7 7.5L5 12l7-7.5Z"
-                fill={active ? "currentColor" : "none"}
-                opacity={active ? 0.14 : 1}
+                fill={active ? "#030064" : "none"}
+                // opacity={active ? 0.14 : 1}
             />
             <path d="M12 4.5 19 12l-7 7.5L5 12l7-7.5Z" />
         </svg>
@@ -298,8 +298,8 @@ function EllipseIcon({ active = false }: { active?: boolean }) {
                 cy="12"
                 rx="7"
                 ry="5.5"
-                fill={active ? "currentColor" : "none"}
-                opacity={active ? 0.14 : 1}
+                fill={active ? "#030064" : "none"}
+                // opacity={active ? 0.14 : 1}
             />
             <ellipse cx="12" cy="12" rx="7" ry="5.5" />
         </svg>
@@ -319,8 +319,8 @@ function ArrowIcon({ active = false }: { active?: boolean }) {
         >
             <path
                 d="M6 18 18 6"
-                fill={active ? "currentColor" : "none"}
-                opacity={active ? 0.14 : 1}
+                fill={active ? "#030064" : "none"}
+                // opacity={active ? 0.14 : 1}
             />
             <path d="M13 6h5v5" />
             <path d="M6 18 18 6" />
@@ -340,8 +340,8 @@ function LineIcon({ active = false }: { active?: boolean }) {
         >
             <path
                 d="M6 18 18 6"
-                fill={active ? "currentColor" : "none"}
-                opacity={active ? 0.14 : 1}
+                fill={active ? "#030064" : "none"}
+                // opacity={active ? 0.14 : 1}
             />
             <path d="M6 18 18 6" />
         </svg>
@@ -361,8 +361,8 @@ function DrawIcon({ active = false }: { active?: boolean }) {
         >
             <path
                 d="M5 19l2-.5 9-9a1.7 1.7 0 0 0 0-2.4 1.7 1.7 0 0 0-2.4 0l-9 9L4 19z"
-                fill={active ? "currentColor" : "none"}
-                opacity={active ? 0.14 : 1}
+                fill={active ? "none" : "none"}
+                // opacity={active ? 0.14 : 1}
             />
             <path d="M5 19l2-.5 9-9a1.7 1.7 0 0 0 0-2.4 1.7 1.7 0 0 0-2.4 0l-9 9L4 19z" />
         </svg>
@@ -384,8 +384,8 @@ function TextIcon({ active = false }: { active?: boolean }) {
             <path d="M12 7v10" />
             <path
                 d="M9 17h6"
-                fill={active ? "currentColor" : "none"}
-                opacity={active ? 0.14 : 1}
+                fill={active ? "#030064" : "none"}
+                // opacity={active ? 0.14 : 1}
             />
             <path d="M9 17h6" />
         </svg>
@@ -409,8 +409,8 @@ function ImageIcon({ active = false }: { active?: boolean }) {
                 width="14"
                 height="14"
                 rx="2"
-                fill={active ? "currentColor" : "none"}
-                opacity={active ? 0.14 : 1}
+                fill={active ? "#030064" : "none"}
+                // opacity={active ? 0.14 : 1}
             />
             <circle cx="9" cy="9" r="1.3" />
             <path d="m8 15 2.2-2.2a1 1 0 0 1 1.4 0L14 15l1.2-1.2a1 1 0 0 1 1.4 0L19 16.2" />
@@ -431,8 +431,8 @@ function EraserIcon({ active = false }: { active?: boolean }) {
         >
             <path
                 d="m8 17 9-9a1.8 1.8 0 0 1 2.5 0l1.2 1.2a1.8 1.8 0 0 1 0 2.5l-9 9H7l-3.5-3.5a1.8 1.8 0 0 1 0-2.5L6.3 12"
-                fill={active ? "currentColor" : "none"}
-                opacity={active ? 0.14 : 1}
+                fill={active ? "none" : "none"}
+                // opacity={active ? 0.14 : 1}
             />
             <path d="m8 17 9-9" />
         </svg>
