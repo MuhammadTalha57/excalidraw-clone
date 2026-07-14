@@ -5,8 +5,8 @@ import { useCursorStore } from "@/stores/useCursorStore";
 import { HandleName } from "@/lib/types";
 import renderElement, {
     renderSelectedElementsOverlay,
-} from "../../lib/canvas/renderElement";
-import pointerHandler from "../../lib/canvas/interactions/captureInteraction";
+} from "../lib/canvas/renderElement";
+import pointerHandler from "../lib/canvas/interactions/captureInteraction";
 import { usePreviewElementStore } from "@/stores/usePreviewElement";
 import { useCanvasElementsStore } from "@/stores/useCanvasElements";
 import { useCameraStore } from "@/stores/useCamera";
@@ -14,7 +14,7 @@ import { useSelectionBoxStore } from "@/stores/useSelectionBox";
 import { useSelectedElementsOverlayStore } from "@/stores/useSelectedElementsBox";
 import { useSelectedToolStore } from "@/stores/useSelectedTool";
 import { useErasingElementsStore } from "@/stores/useErasingElements";
-import { RemoteCursors } from "../remoteCursors";
+import { RemoteCursors } from "./remoteCursors";
 import { useEmitCursorMove } from "@/hooks/useEmitCursorMove";
 
 export default function Canvas() {

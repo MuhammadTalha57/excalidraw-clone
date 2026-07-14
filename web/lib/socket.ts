@@ -3,7 +3,7 @@ import { io, Socket } from "socket.io-client";
 import { CanvasElement } from "@excalidraw/shared/types";
 import { useCanvasElementsStore } from "@/stores/useCanvasElements";
 import { useSessionStore } from "@/stores/useSessionStore";
-import {CanvasElements} from "@excalidraw/shared/types"
+import { CanvasElements } from "@excalidraw/shared/types";
 import { stringify } from "querystring";
 import { useRemoteCursorStore } from "@/stores/useRemoteCursor";
 
@@ -26,7 +26,8 @@ const syncServerUrl = process.env.NEXT_PUBLIC_SYNC_SERVER_URL;
 
 const setCanvasElements = useCanvasElementsStore.getState().setCanvasElements;
 const addCanvasElement = useCanvasElementsStore.getState().addCanvasElement;
-const updateCanvasElement = useCanvasElementsStore.getState().updateCanvasElement;
+const updateCanvasElement =
+    useCanvasElementsStore.getState().updateCanvasElement;
 const {
     clearSessionState,
     setSessionError,
@@ -36,7 +37,9 @@ const {
 
 function getSyncServerUrl(): string {
     if (!syncServerUrl) {
-        throw new Error("Missing NEXT_PUBLIC_SYNC_SERVER_URL environment variable");
+        throw new Error(
+            "Missing NEXT_PUBLIC_SYNC_SERVER_URL environment variable",
+        );
     }
 
     return syncServerUrl;
@@ -44,11 +47,10 @@ function getSyncServerUrl(): string {
 
 export function getSocket(): Socket {
     if (!socket) {
-        // socket = io(getSyncServerUrl(), { autoConnect: false });
         socket = io(getSyncServerUrl(), {
-  path: "/api/socket/socket.io",   // must match the function's route path
-  transports: ["websocket"],       // required — skip long-polling, it doesn't play well with Vercel functions
-});
+            path: "/api/socket/socket.io",
+            transports: ["websocket"],
+        });
     }
 
     return socket;
@@ -59,37 +61,65 @@ function bindSocketListeners() {
 
     const currentSocket = getSocket();
 
-    currentSocket.on("cursor-move", ({socketId, x,  y, name}: {socketId: string, x: number, y: number, name: string}) => {
-        if (socketId && x !== undefined && y !== undefined) {
-        useRemoteCursorStore.getState().setCursor(socketId, {
-            x: x,
-            y: y,
-            name: name,
-            socketId: socketId,
-            color: "#000000",
-        });
-    }
-    })
+    currentSocket.on(
+        "cursor-move",
+        ({
+            socketId,
+            x,
+            y,
+            name,
+        }: {
+            socketId: string;
+            x: number;
+            y: number;
+            name: string;
+        }) => {
+            if (socketId && x !== undefined && y !== undefined) {
+                useRemoteCursorStore.getState().setCursor(socketId, {
+                    x: x,
+                    y: y,
+                    name: name,
+                    socketId: socketId,
+                    color: "#000000",
+                });
+            }
+        },
+    );
 
-    currentSocket.on("element-update", ({ id, patch, senderId }: { id: string, patch: Partial<CanvasElement>, senderId: any }) => {
-        console.log("Received Element Update");
-        updateCanvasElement(id, patch, false);
-    });
+    currentSocket.on(
+        "element-update",
+        ({
+            id,
+            patch,
+            senderId,
+        }: {
+            id: string;
+            patch: Partial<CanvasElement>;
+            senderId: any;
+        }) => {
+            console.log("Received Element Update");
+            updateCanvasElement(id, patch, false);
+        },
+    );
 
-    currentSocket.on("element-add", ({ element }: { element?: CanvasElement }) => {
-        console.log("Received Element Addition");
-        if (element) {
-            addCanvasElement(element, false);
-        }
-    });
+    currentSocket.on(
+        "element-add",
+        ({ element }: { element?: CanvasElement }) => {
+            console.log("Received Element Addition");
+            if (element) {
+                addCanvasElement(element, false);
+            }
+        },
+    );
 
-    currentSocket.on("element-delete", ({ids}: {ids: string[]}) => {
+    currentSocket.on("element-delete", ({ ids }: { ids: string[] }) => {
         useCanvasElementsStore.getState().deleteCanvasElements(ids, false);
-    })
+    });
 
     currentSocket.on("session-ended", () => {
         restoreLocalBoard();
         clearSessionState();
+        useRemoteCursorStore.getState().clearCursors();
         currentSocket.disconnect();
     });
 
@@ -101,7 +131,9 @@ function storeLocalBoard(elements: CanvasElements) {
 }
 
 function restoreLocalBoard() {
-    const local: Record<string, CanvasElement> = JSON.parse(localStorage.getItem("local-board") ?? "{}");
+    const local: Record<string, CanvasElement> = JSON.parse(
+        localStorage.getItem("local-board") ?? "{}",
+    );
 
     setCanvasElements(local);
 }
@@ -109,7 +141,7 @@ function restoreLocalBoard() {
 function emitJoinSession(
     sessionId: string,
     name: string,
-    hostToken: string | undefined
+    hostToken: string | undefined,
 ): Promise<JoinAck> {
     return new Promise((resolve) => {
         const currentSocket = getSocket();
@@ -117,7 +149,7 @@ function emitJoinSession(
         currentSocket.emit(
             "join-session",
             { sessionId, name, hostToken },
-            (ack: JoinAck = {}) => resolve(ack)
+            (ack: JoinAck = {}) => resolve(ack),
         );
     });
 }
@@ -131,7 +163,7 @@ export async function startSession(elements: CanvasElements, name: string) {
         const response = await fetch(`${getSyncServerUrl()}/api/sessions`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ elements:elements, hostName: name }),
+            body: JSON.stringify({ elements: elements, hostName: name }),
         });
 
         const payload: CreateSessionResponse = await response.json();
@@ -140,14 +172,21 @@ export async function startSession(elements: CanvasElements, name: string) {
             throw new Error(payload.error || "Failed to create session");
         }
 
-        localStorage.setItem(`hostToken:${payload.sessionId}`, payload.hostToken);
+        localStorage.setItem(
+            `hostToken:${payload.sessionId}`,
+            payload.hostToken,
+        );
         bindSocketListeners();
 
         const currentSocket = getSocket();
         currentSocket.connect();
 
-        const ack = await emitJoinSession(payload.sessionId, name, payload.hostToken);
-        
+        const ack = await emitJoinSession(
+            payload.sessionId,
+            name,
+            payload.hostToken,
+        );
+
         if (ack.error) {
             throw new Error(ack.error);
         }
@@ -159,7 +198,8 @@ export async function startSession(elements: CanvasElements, name: string) {
         setSessionState(payload.sessionId, "host");
         return payload.sessionId;
     } catch (error) {
-        const message = error instanceof Error ? error.message : "Failed to start session";
+        const message =
+            error instanceof Error ? error.message : "Failed to start session";
         setSessionError(message);
         throw error;
     } finally {
@@ -174,10 +214,14 @@ export async function joinSession(sessionId: string, name: string) {
     console.log("JOINING SESSION");
 
     try {
-        const response = await fetch(`${getSyncServerUrl()}/api/sessions/${sessionId}`);
+        const response = await fetch(
+            `${getSyncServerUrl()}/api/sessions/${sessionId}`,
+        );
 
         if (!response.ok) {
-            const payload: { error?: string } = await response.json().catch(() => ({}));
+            const payload: { error?: string } = await response
+                .json()
+                .catch(() => ({}));
             throw new Error(payload.error || "Session not found or expired");
         }
 
@@ -186,7 +230,8 @@ export async function joinSession(sessionId: string, name: string) {
         storeLocalBoard(useCanvasElementsStore.getState().canvasElements);
         setCanvasElements(payload.session.elements ?? {});
 
-        const hostToken = localStorage.getItem(`hostToken:${sessionId}`) || undefined;
+        const hostToken =
+            localStorage.getItem(`hostToken:${sessionId}`) || undefined;
 
         bindSocketListeners();
 
@@ -207,7 +252,8 @@ export async function joinSession(sessionId: string, name: string) {
 
         console.log("JOINED SESSION");
     } catch (error) {
-        const message = error instanceof Error ? error.message : "Failed to join session";
+        const message =
+            error instanceof Error ? error.message : "Failed to join session";
         setSessionError(message);
         throw error;
     } finally {
@@ -239,7 +285,7 @@ export async function endSession() {
                     }
 
                     resolve();
-                }
+                },
             );
         });
 
@@ -248,11 +294,13 @@ export async function endSession() {
         localStorage.removeItem(`hostToken:${sessionId}`);
         clearSessionState();
     } catch (error) {
-        const message = error instanceof Error ? error.message : "Failed to end session";
+        const message =
+            error instanceof Error ? error.message : "Failed to end session";
         setSessionError(message);
         throw error;
     } finally {
         setSessionPending(false);
+        useRemoteCursorStore.getState().clearCursors();
     }
 }
 
@@ -268,5 +316,5 @@ export function leaveSession() {
     currentSocket.disconnect();
     restoreLocalBoard();
     clearSessionState();
+    useRemoteCursorStore.getState().clearCursors();
 }
-

@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { getSocket } from "@/lib/socket";
-import throttle from "lodash.throttle"; // npm install lodash.throttle
+import throttle from "lodash.throttle";
 import { screenToWorld } from "@/utils/coords";
 
 export function useEmitCursorMove() {

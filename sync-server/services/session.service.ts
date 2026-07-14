@@ -28,8 +28,7 @@ export async function getActiveSession(
     // Try Mongo DB
     session = await getActiveSessionFromDB(sessionId);
     if (session) {
-        // Cache-warm with the FULL state so future reads/writes against
-        // Redis operate on complete data, not a partial meta-only record.
+
         await writeFullSessionToCache(session);
         return session;
     }
@@ -58,21 +57,11 @@ export async function deleteElements(
     return deleteElementsFromRedis(sessionId, ids);
 }
 
-/**
- * Flushes ONE session's current Redis state into MongoDB (upsert) and
- * clears its dirty flag. Used by both the scheduled batch flush and by
- * end-session (to force an immediate, synchronous persist).
- *
- * The dirty flag is cleared BEFORE reading, not after writing: if a write
- * races in during this call, its SADD lands after our clear and re-marks
- * the session dirty, so it's simply retried on the next cycle instead of
- * being silently dropped.
- */
 export async function flushSessionToDB(sessionId: string): Promise<boolean> {
     await clearSessionDirty(sessionId);
 
     const state = await getRawSessionFromCache(sessionId);
-    if (!state) return false; // expired / never existed — nothing to do
+    if (!state) return false; 
 
     const { elements, ...meta } = state;
 
@@ -85,11 +74,6 @@ export async function flushSessionToDB(sessionId: string): Promise<boolean> {
     return true;
 }
 
-/**
- * Scheduled job (called once a minute via Vercel Cron): flushes every
- * session currently marked dirty. Failures are re-marked dirty so they're
- * retried on the next run instead of being lost.
- */
 export async function flushAllDirtySessions(): Promise<{
     total: number;
     flushed: number;

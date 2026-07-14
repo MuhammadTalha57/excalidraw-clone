@@ -1,7 +1,5 @@
 import mongoose from "mongoose";
 
-const TTL_SECONDS = Number(process.env.SESSION_TTL_SECONDS || 86400);
-
 const sessionSchema = new mongoose.Schema({
     _id: { type: String, required: true },
 
@@ -19,12 +17,6 @@ const sessionSchema = new mongoose.Schema({
 
     active: { type: Boolean, default: true },
 
-    // createdAt: { type: Date, default: Date.now },
-    // updatedAt: {
-    //   type: Date,
-    //   default: Date.now,
-    //   expires: TTL_SECONDS,
-    // },
 });
 
 export const Session = mongoose.model("Session", sessionSchema);

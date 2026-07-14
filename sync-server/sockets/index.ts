@@ -1,4 +1,3 @@
-import { Session } from "../db/Session.js";
 import { Server, Socket } from "socket.io";
 import { CanvasElement, PartialCanvasElement } from "@excalidraw/shared/types";
 import {
@@ -13,45 +12,6 @@ import {
     PartialCanvasElementSchema,
 } from "@excalidraw/shared/schema";
 import { logger } from "../utils/logger.js";
-
-const SAVE_DEBOUNCE_MS = 1000;
-
-// async function loadSessionIntoMemory(sessionId: string) {
-//     const doc = await Session.findById(sessionId).lean();
-//     if (!doc) return null;
-
-//     const state = {
-//         elements: doc.elements,
-//         hostToken: doc.hostToken,
-//         saveTimer: null,
-//     };
-//     activeSessions.set(sessionId, state);
-//     return state;
-// }
-
-// function scheduleSave(sessionId: string) {
-//     const state = activeSessions.get(sessionId);
-//     if (!state) return;
-
-//     if (state.saveTimer) clearTimeout(state.saveTimer);
-
-//     state.saveTimer = setTimeout(async () => {
-//         const current = activeSessions.get(sessionId);
-//         if (!current) return;
-
-//         try {
-//             await Session.findByIdAndUpdate(sessionId, {
-//                 elements: current.elements,
-//                 updatedAt: new Date(),
-//             });
-//         } catch (err) {
-//             logger.error(
-//                 `[sockets] failed to persist session ${sessionId}:`,
-//                 err,
-//             );
-//         }
-//     }, SAVE_DEBOUNCE_MS);
-// }
 
 export function registerSocketHandlers(io: Server) {
     io.on("connection", (socket: Socket) => {
@@ -165,10 +125,9 @@ export function registerSocketHandlers(io: Server) {
 
             updateElement(currentSessionId, element);
             socket.to(currentSessionId).emit("element-add", { element });
-            // scheduleSave(currentSessionId);
         });
 
-        socket.on("element-delete", async ({ ids }: {ids: string[]}) => {
+        socket.on("element-delete", async ({ ids }: { ids: string[] }) => {
             logger.info(`Received Element Delete by ${currentName}`);
             if (!currentSessionId) return;
 
@@ -179,16 +138,29 @@ export function registerSocketHandlers(io: Server) {
             socket.to(currentSessionId).emit("element-delete", { ids });
         });
 
-        socket.on("cursor-move", ({socketId, x, y, name}: {socketId: string, x: number, y: number, name: string}) => {
-            logger.info(`Received Cursor Move by ${currentName}`);
-          if (!currentSessionId) return;
-          socket.to(currentSessionId).emit("cursor-move", {
-            x: x,
-            y: y,
-            socketId: socket.id,
-            name: currentName,
-          });
-        });
+        socket.on(
+            "cursor-move",
+            ({
+                socketId,
+                x,
+                y,
+                name,
+            }: {
+                socketId: string;
+                x: number;
+                y: number;
+                name: string;
+            }) => {
+                logger.info(`Received Cursor Move by ${currentName}`);
+                if (!currentSessionId) return;
+                socket.to(currentSessionId).emit("cursor-move", {
+                    x: x,
+                    y: y,
+                    socketId: socket.id,
+                    name: currentName,
+                });
+            },
+        );
 
         socket.on("end-session", async ({ sessionId } = {}, ack) => {
             try {
