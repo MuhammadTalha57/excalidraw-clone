@@ -123,6 +123,14 @@ function bindSocketListeners() {
         currentSocket.disconnect();
     });
 
+    currentSocket.on(
+        "peer-left",
+        ({ name, socketId }: { name: string; socketId: string }) => {
+            console.log(`${name} Left Session`);
+            useRemoteCursorStore.getState().removeCursor(socketId);
+        },
+    );
+
     socketListenersBound = true;
 }
 

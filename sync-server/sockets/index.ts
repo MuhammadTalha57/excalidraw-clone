@@ -185,9 +185,6 @@ export function registerSocketHandlers(io: Server) {
                     active: false,
                 });
 
-                // Force an immediate, synchronous persist rather than waiting for
-                // the next scheduled flush — we don't want the final board state
-                // (or the active:false flag) resting only on a 24h Redis TTL.
                 await flushSessionToDB(sessionId);
 
                 logger.info(`Session Ended: ${currentSessionId}`);
@@ -203,14 +200,11 @@ export function registerSocketHandlers(io: Server) {
             if (!currentSessionId) return;
             socket
                 .to(currentSessionId)
-                .emit("peer-left", { name: currentName });
+                .emit("peer-left", { name: currentName, socketId: socket.id });
 
             logger.info(
                 `${currentName} Disconnected From Session: ${currentSessionId}`,
             );
-            // Deliberately not auto-ending the session if the host disconnects
-            // (tab close / network blip). The session just sits there until someone
-            // explicitly ends it, or the Mongo TTL index reaps it after inactivity.
         });
     });
 }
