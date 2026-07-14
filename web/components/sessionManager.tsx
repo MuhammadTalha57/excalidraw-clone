@@ -108,7 +108,7 @@ export default function SessionManager() {
                     type="button"
                     onClick={toggleSessionDialog}
                     aria-expanded={isOpen}
-                    className="group inline-flex items-center gap-2 rounded-full border border-[#d5cec2] bg-[#f6f1e8]/95 px-4 py-2 text-sm font-medium text-[#1f1b16] shadow-[0_16px_40px_rgba(15,23,42,0.16)] backdrop-blur transition-all hover:-translate-y-px hover:bg-white/95 hover:shadow-[0_18px_44px_rgba(15,23,42,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c77a1f]/35"
+                    className="group inline-flex items-center gap-2 rounded-full border border-[#d5cec2]  px-4 py-2 text-sm font-medium text-[#1f1b16] shadow-[0_16px_40px_rgba(15,23,42,0.16)] backdrop-blur transition-all hover:-translate-y-px hover:bg-white/95 hover:shadow-[0_18px_44px_rgba(15,23,42,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c77a1f]/35"
                 >
                     <Users className="h-4 w-4 text-[#8b735b] transition-transform group-hover:scale-105" />
                     <span>Session</span>
@@ -120,7 +120,7 @@ export default function SessionManager() {
                 </button>
 
                 {isOpen ? (
-                    <div className="w-[min(92vw,22rem)] rounded-3xl border border-[#ddd5c7] bg-[#f7f2ea]/95 p-4 shadow-[0_24px_60px_rgba(15,23,42,0.18)] backdrop-blur sm:w-88">
+                    <div className="w-[min(92vw,22rem)] rounded-3xl border border-[#ddd5c7]  p-4 shadow-[0_24px_60px_rgba(15,23,42,0.18)] backdrop-blur sm:w-88">
                         <div className="mb-4 flex items-start justify-between gap-3">
                             <div>
                                 <h2 className="text-sm font-semibold text-[#1f1b16]">
@@ -164,11 +164,11 @@ export default function SessionManager() {
                                     readOnly
                                     value={sessionId || ""}
                                     placeholder="No active session"
-                                    className="mt-1 w-full rounded-2xl border border-[#e2d8c7] bg-[#fbf8f4] px-3 py-2 text-sm text-[#342d24] outline-none placeholder:text-[#a49786]"
+                                    className="mt-1 w-full rounded-2xl border border-[#e2d8c7]  px-3 py-2 text-sm text-[#342d24] outline-none placeholder:text-[#a49786]"
                                 />
                             </section>
 
-                            <section className="rounded-2xl border border-[#e7dfd2] bg-white/80 p-3">
+                            <section className="rounded-2xl border border-[#e7dfd2] p-3">
                                 <div className="mb-3 flex items-center justify-between gap-3">
                                     <div>
                                         <h3 className="text-sm font-medium text-[#1f1b16]">
@@ -189,14 +189,14 @@ export default function SessionManager() {
                                     value={sessionInput}
                                     onChange={(event) => setSessionInput(event.target.value)}
                                     placeholder="Paste session ID"
-                                    className="mt-1 w-full rounded-2xl border border-[#e2d8c7] bg-[#fbf8f4] px-3 py-2 text-sm text-[#342d24] outline-none placeholder:text-[#a49786] focus:border-[#c77a1f]/40 focus:ring-2 focus:ring-[#c77a1f]/15"
+                                    className="mt-1 w-full rounded-2xl border border-[#e2d8c7]  px-3 py-2 text-sm text-[#342d24] outline-none placeholder:text-[#a49786] focus:border-[#c77a1f]/40 focus:ring-2 focus:ring-[#c77a1f]/15"
                                 />
 
                                 <button
                                     type="button"
                                     onClick={handleJoinClick}
                                     disabled={isPending}
-                                    className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-full border border-[#d5cec2] bg-[#f6f1e8] px-4 py-2.5 text-sm font-medium text-[#1f1b16] transition-all hover:-translate-y-px hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
+                                    className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-full border border-[#d5cec2]  px-4 py-2.5 text-sm font-medium text-[#1f1b16] transition-all hover:-translate-y-px hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
                                 >
                                     {isGuest ? (
                                         <Square className="h-4 w-4" />
