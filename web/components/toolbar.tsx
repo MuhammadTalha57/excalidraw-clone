@@ -136,7 +136,7 @@ export default function Toolbar({
             ref={toolbarRef}
         >
             <div
-                className="rounded-full border border-[#d5cec2] bg-[#f6f1e8] px-2 py-2 shadow-[0_16px_40px_rgba(15,23,42,0.16)] backdrop-blur"
+                className="rounded-2xl border border-[#d5cec2] px-2 py-2 backdrop-blur"
                 style={{
                     width: isScrollable ? "80vw" : "fit-content",
                     maxWidth: isScrollable ? "80vw" : "100%",
