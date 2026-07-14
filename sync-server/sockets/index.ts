@@ -6,6 +6,7 @@ import {
     updateElement,
     updateSessionMeta,
     flushSessionToDB,
+    deleteElements,
 } from "../services/session.service.js";
 import {
     CanvasElementSchema,
@@ -164,6 +165,18 @@ export function registerSocketHandlers(io: Server) {
 
             updateElement(currentSessionId, element);
             socket.to(currentSessionId).emit("element-add", { element });
+            // scheduleSave(currentSessionId);
+        });
+
+        socket.on("element-delete", async ({ ids }: {ids: string[]}) => {
+            logger.info(`Received Element Delete by ${currentName}`);
+            if (!currentSessionId) return;
+
+            const state = await getActiveSession(currentSessionId);
+            if (!state) return;
+
+            deleteElements(currentSessionId, ids);
+            socket.to(currentSessionId).emit("element-delete", { ids });
             // scheduleSave(currentSessionId);
         });
 

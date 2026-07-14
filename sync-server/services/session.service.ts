@@ -8,6 +8,7 @@ import {
     getRawSessionFromCache,
     writeFullSessionToCache,
     updateElement as updateElementFromRedis,
+    deleteElements as deleteElementsFromRedis,
     updateSessionMeta as updateSessionMetaFromRedis,
     markSessionDirty,
     clearSessionDirty,
@@ -48,6 +49,13 @@ export async function updateSessionMeta(
     updatedMeta: SessionMetaType,
 ): Promise<void> {
     return updateSessionMetaFromRedis(sessionId, updatedMeta);
+}
+
+export async function deleteElements(
+    sessionId: string,
+    ids: string[],
+): Promise<void> {
+    return deleteElementsFromRedis(sessionId, ids);
 }
 
 /**

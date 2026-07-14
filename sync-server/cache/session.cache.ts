@@ -12,7 +12,9 @@ import {
 } from "@excalidraw/shared/types";
 import { logger } from "../utils/logger.js";
 
-const SESSION_TTL_SECONDS = Number(process.env.SESSION_TTL_SECONDS || 86400 * 7);
+const SESSION_TTL_SECONDS = Number(
+    process.env.SESSION_TTL_SECONDS || 86400 * 7,
+);
 const DIRTY_SESSIONS_KEY = "dirty-sessions";
 
 export async function getActiveSession(
@@ -117,9 +119,7 @@ export async function writeFullSessionToCache(
         pipeline.expire(`session:${session._id}:elements`, SESSION_TTL_SECONDS);
         await pipeline.exec();
     } catch (error) {
-        logger.error(
-            `Error Warming Session Cache: ${session._id} - ${error}`,
-        );
+        logger.error(`Error Warming Session Cache: ${session._id} - ${error}`);
     }
 }
 
@@ -181,6 +181,32 @@ export async function updateSessionMeta(
     }
 }
 
+export async function deleteElements(
+    sessionId: string,
+    ids: string[],
+): Promise<void> {
+    try {
+        const redisClient = getClient();
+
+        const pipeline = redisClient.pipeline();
+
+        for (const id of ids) {
+            pipeline.hdel(`session:${sessionId}:elements`, id);
+        }
+        pipeline.expire(`session:${sessionId}:elements`, SESSION_TTL_SECONDS);
+        pipeline.expire(`session:${sessionId}:meta`, SESSION_TTL_SECONDS);
+        pipeline.sadd(DIRTY_SESSIONS_KEY, sessionId);
+        await pipeline.exec();
+
+        logger.info(`Deleted Element From Redis: ${sessionId} - ${ids}`);
+    } catch (error) {
+        logger.error(
+            `Error Deleting Element From Redis: ${sessionId} - ${ids}`,
+        );
+        return;
+    }
+}
+
 export async function markSessionDirty(sessionId: string): Promise<void> {
     try {
         await getClient().sadd(DIRTY_SESSIONS_KEY, sessionId);
@@ -193,7 +219,9 @@ export async function clearSessionDirty(sessionId: string): Promise<void> {
     try {
         await getClient().srem(DIRTY_SESSIONS_KEY, sessionId);
     } catch (error) {
-        logger.error(`Error Clearing Session Dirty Flag: ${sessionId} - ${error}`);
+        logger.error(
+            `Error Clearing Session Dirty Flag: ${sessionId} - ${error}`,
+        );
     }
 }
 
