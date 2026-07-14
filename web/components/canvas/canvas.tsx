@@ -14,6 +14,8 @@ import { useSelectionBoxStore } from "@/stores/useSelectionBox";
 import { useSelectedElementsOverlayStore } from "@/stores/useSelectedElementsBox";
 import { useSelectedToolStore } from "@/stores/useSelectedTool";
 import { useErasingElementsStore } from "@/stores/useErasingElements";
+import { RemoteCursors } from "../remoteCursors";
+import { useEmitCursorMove } from "@/hooks/useEmitCursorMove";
 
 export default function Canvas() {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -75,6 +77,8 @@ export default function Canvas() {
         };
     }, [handler.onWheel]);
 
+    useEmitCursorMove();
+
     useLayoutEffect(() => {
         const canvas = canvasRef.current;
         if (!canvas) return;
@@ -113,6 +117,7 @@ export default function Canvas() {
         erasingIds,
     ]);
     return (
+        <>
         <canvas
             ref={canvasRef}
             style={{ cursor: cursorClass, touchAction: "none" }}
@@ -123,6 +128,8 @@ export default function Canvas() {
             onKeyDown={handler.onKeyDown}
             tabIndex={0}
         />
+        <RemoteCursors/>
+        </>
     );
 }
 

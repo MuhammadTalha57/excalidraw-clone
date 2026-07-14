@@ -177,17 +177,18 @@ export function registerSocketHandlers(io: Server) {
 
             deleteElements(currentSessionId, ids);
             socket.to(currentSessionId).emit("element-delete", { ids });
-            // scheduleSave(currentSessionId);
         });
 
-        // socket.on("cursor-move", (payload = {}) => {
-        //   if (!currentSessionId) return;
-        //   socket.to(currentSessionId).emit("cursor-move", {
-        //     ...payload,
-        //     socketId: socket.id,
-        //     name: currentName,
-        //   });
-        // });
+        socket.on("cursor-move", ({socketId, x, y, name}: {socketId: string, x: number, y: number, name: string}) => {
+            logger.info(`Received Cursor Move by ${currentName}`);
+          if (!currentSessionId) return;
+          socket.to(currentSessionId).emit("cursor-move", {
+            x: x,
+            y: y,
+            socketId: socket.id,
+            name: currentName,
+          });
+        });
 
         socket.on("end-session", async ({ sessionId } = {}, ack) => {
             try {

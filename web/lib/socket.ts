@@ -4,6 +4,8 @@ import { CanvasElement } from "@excalidraw/shared/types";
 import { useCanvasElementsStore } from "@/stores/useCanvasElements";
 import { useSessionStore } from "@/stores/useSessionStore";
 import {CanvasElements} from "@excalidraw/shared/types"
+import { stringify } from "querystring";
+import { useRemoteCursorStore } from "@/stores/useRemoteCursor";
 
 type JoinAck = {
     elements?: CanvasElements;
@@ -57,12 +59,20 @@ function bindSocketListeners() {
 
     const currentSocket = getSocket();
 
+    currentSocket.on("cursor-move", ({socketId, x,  y, name}: {socketId: string, x: number, y: number, name: string}) => {
+        if (socketId && x !== undefined && y !== undefined) {
+        useRemoteCursorStore.getState().setCursor(socketId, {
+            x: x,
+            y: y,
+            name: name,
+            socketId: socketId,
+            color: "#000000",
+        });
+    }
+    })
+
     currentSocket.on("element-update", ({ id, patch, senderId }: { id: string, patch: Partial<CanvasElement>, senderId: any }) => {
         console.log("Received Element Update");
-    //     if (senderId === currentSocket.id) {
-    //     console.log("Ignored self-echo packet");
-    //     return; 
-    // }
         updateCanvasElement(id, patch, false);
     });
 
@@ -259,3 +269,4 @@ export function leaveSession() {
     restoreLocalBoard();
     clearSessionState();
 }
+
