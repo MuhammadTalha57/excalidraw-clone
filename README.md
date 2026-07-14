@@ -6,6 +6,8 @@ A hand-drawn-style collaborative whiteboard, built from scratch on **Next.js**, 
 
 Live Demo: ![https://excalidraw-clone.seven.vercel.app](https://excalidraw-clone.seven.vercel.app)
 
+![alt text](image.png)
+
 ![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
@@ -94,7 +96,7 @@ Open [http://localhost:3000](http://localhost:3000) to start drawing.
 
 ## 🤝 Contributing
 
-This is currently a solo learning project, but issues, suggestions, and pull requests are welcome — especially around the items in the **Planned / Future** list above.
+This is currently a solo learning project, but issues, suggestions, and pull requests are welcome.
 
 ---
 
