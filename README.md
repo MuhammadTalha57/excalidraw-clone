@@ -4,7 +4,7 @@
 
 A hand-drawn-style collaborative whiteboard, built from scratch on **Next.js**, **React**, and the HTML5 Canvas API — no drawing library, no shortcuts.
 
-Live Demo: [https://excalidraw-clone.seven.vercel.app](https://excalidraw-clone.seven.vercel.app)
+Live Demo: [https://excalidraw-clone.seven.vercel.app](https://excalidraw-clone-seven.vercel.app)
 
 ![alt text](image.png)
 
